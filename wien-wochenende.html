@@ -1,0 +1,1776 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wien Wochenende</title>
+<meta name="description" content="Karte, Wochenendplan und Kaffeehaus-Guide für unseren Ausflug nach Wien.">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:title" content="Wien – unser Wochenende">
+<meta property="og:description" content="Karte, Tagesplan, Beisln und Kaffeehäuser für unseren Ausflug nach Wien.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#F1BE3A">
+<script>try{var t=JSON.parse(localStorage.getItem('wien:theme'));if(t==='dark'||t==='light')document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<style>
+/* ---------- Tokens: Schönbrunner Gelb, Habsburg-Schwarz, Marmor ---------- */
+:root{
+  --yellow:#F1BE3A;
+  --ink:#1D1A16;
+  --ink-2:#5B544B;
+  --marble:#F7F6F2;
+  --surface:#FFFFFF;
+  --line:#DDD8CD;
+  --strong:#000;
+  --on-strong:#F1BE3A;
+  --head-bg:#F1BE3A;
+  --head-ink:#000;
+  --hard:#F1BE3A;
+  --ok:#2F6B5E;
+  --alert:#9E1B32;
+  --focus:#000;
+  --map-bg:#E9E5DC;
+  --pop-border:#000;
+  --display:"Josefin Sans","Futura","Century Gothic",system-ui,sans-serif;
+  --text:"Newsreader",Georgia,"Times New Roman",serif;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --ink:#EEE8DD; --ink-2:#B5AC9F; --marble:#14120F; --surface:#1D1A16; --line:#38332C;
+  --strong:#F1BE3A; --on-strong:#000; --head-bg:#000; --head-ink:#F1BE3A; --hard:#6B6257;
+  --ok:#3F8A74; --alert:#E0566B; --focus:#F1BE3A; --map-bg:#202020; --pop-border:#F1BE3A;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ink:#EEE8DD; --ink-2:#B5AC9F; --marble:#14120F; --surface:#1D1A16; --line:#38332C;
+    --strong:#F1BE3A; --on-strong:#000; --head-bg:#000; --head-ink:#F1BE3A; --hard:#6B6257;
+    --ok:#3F8A74; --alert:#E0566B; --focus:#F1BE3A; --map-bg:#202020; --pop-border:#F1BE3A;
+    color-scheme:dark;
+  }
+}
+
+/* ---------- Basis ---------- */
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;background:var(--marble);color:var(--ink);font:400 16px/1.55 var(--text);-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.i{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- Kopf ---------- */
+.masthead{position:relative;z-index:30;flex:none;display:flex;align-items:center;gap:18px;padding:14px 22px 20px;background:var(--head-bg);color:var(--head-ink)}
+.masthead::after{content:"";position:absolute;left:0;right:0;bottom:0;height:6px;background:repeating-linear-gradient(90deg,var(--head-ink) 0 6px,transparent 6px 12px)}
+.wordmark{display:flex;gap:4px;margin:0;perspective:400px}
+.wordmark span{display:grid;place-items:center;width:46px;height:46px;background:var(--head-ink);color:var(--head-bg);font:700 30px/1 var(--display);padding-top:6px}
+.masthead__title{min-width:0}
+.masthead__line{margin:0;font:700 21px/1.1 var(--display)}
+.masthead__sub{margin:3px 0 0;font:italic 400 16px/1.2 var(--text)}
+.masthead__tools{margin-left:auto;display:flex;align-items:center;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:8px;height:38px;padding:3px 13px 0;border:2px solid var(--head-ink);background:transparent;color:var(--head-ink);font:600 15px/1 var(--display);white-space:nowrap;cursor:pointer;list-style:none;user-select:none}
+.chip::-webkit-details-marker{display:none}
+.chip .i{margin-top:-3px}
+.chip:hover,.trip[open] .chip{background:var(--head-ink);color:var(--head-bg)}
+.chip--icon{width:38px;padding:0;justify-content:center}
+.chip--icon .i{margin-top:0}
+.trip{position:relative}
+.popover{position:absolute;right:0;top:calc(100% + 10px);z-index:50;width:min(300px,calc(100vw - 32px));padding:16px;background:var(--surface);color:var(--ink);border:2px solid var(--strong);box-shadow:6px 6px 0 var(--strong)}
+.popover__label{display:block;margin-bottom:8px;font:700 17px/1.2 var(--display)}
+.date-input{width:100%;height:42px;padding:0 10px;border:2px solid var(--ink);background:var(--marble);color:var(--ink)}
+.popover__hint{margin:10px 0 12px;font-size:14.5px;line-height:1.45;color:var(--ink-2)}
+
+/* ---------- Layout ---------- */
+.app{flex:1;min-height:0;display:grid;grid-template-columns:minmax(340px,430px) 1fr;grid-template-areas:"panel map"}
+.panel{grid-area:panel;min-height:0;overflow-y:auto;overscroll-behavior:contain;border-right:2px solid var(--strong);background:var(--marble)}
+.map-wrap{grid-area:map;position:relative;min-height:0;isolation:isolate;background:var(--map-bg)}
+#map{position:absolute;inset:0;background:var(--map-bg)}
+
+/* ---------- Tabs ---------- */
+.tabs{position:sticky;top:0;z-index:20;display:flex;gap:2px;padding:12px 18px 0;background:var(--marble);border-bottom:2px solid var(--strong);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;border:0;background:none;padding:11px 8px 8px;font:600 15px/1 var(--display);color:var(--ink-2);cursor:pointer}
+.tab:focus-visible{outline-offset:-3px}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{background:var(--strong);color:var(--on-strong)}
+.tabpanel{padding:22px 22px 56px}
+
+/* ---------- Typo-Bausteine ---------- */
+.h2{margin:30px 0 8px;font:700 24px/1.15 var(--display)}
+.tabpanel>.h2:first-child{margin-top:0}
+.h3{margin:0 0 10px;font:700 19px/1.2 var(--display)}
+.lead{margin:0 0 14px;color:var(--ink-2);max-width:62ch}
+.block{margin-top:32px}
+.list{list-style:none;margin:0;padding:0}
+.list li{position:relative;margin:8px 0;padding-left:20px}
+.list li::before{content:"";position:absolute;left:2px;top:.62em;width:7px;height:7px;background:var(--ink)}
+.fact{margin-top:18px;font-size:14.5px;color:var(--ink-2);font-style:italic}
+
+/* ---------- Kacheln / Kategorien ---------- */
+.cat-sight{--pin-bg:#F1BE3A;--pin-ink:#000}
+.cat-food{--pin-bg:#9E1B32;--pin-ink:#fff}
+.cat-cafe{--pin-bg:#5A3A28;--pin-ink:#fff}
+.cat-base{--pin-bg:#2F6B5E;--pin-ink:#fff}
+.cat-local{--pin-bg:#3D3B80;--pin-ink:#fff}
+.tile{flex:none;display:grid;place-items:center;width:40px;height:40px;border:2px solid #000;background:var(--pin-bg);color:var(--pin-ink);font:700 20px/1 var(--display);padding-top:4px}
+.tile--icon{padding-top:0}
+.tile .i{width:22px;height:22px}
+.tile--round{border-radius:50%}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:4px 14px 0;border:2px solid var(--strong);background:var(--strong);color:var(--on-strong);font:600 14.5px/1 var(--display);text-decoration:none;cursor:pointer;transition:transform .12s var(--ease),box-shadow .12s var(--ease)}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:3px 3px 0 var(--hard)}
+.btn:active{transform:none;box-shadow:none}
+.btn--ghost{background:transparent;color:var(--ink);border-color:var(--ink)}
+.btn--sm{min-height:34px;padding:3px 12px 0;font-size:14px}
+.btn .i{width:15px;height:15px;margin-top:-3px}
+.linklike{border:0;background:none;padding:0;font:inherit;color:inherit;text-align:left;cursor:pointer;text-decoration:underline;text-decoration-color:var(--yellow);text-decoration-thickness:2px;text-underline-offset:4px}
+.linklike:hover{text-decoration-thickness:4px}
+
+/* ---------- Orte ---------- */
+.base{border:2px solid var(--strong);margin-bottom:6px}
+.base__item{display:grid;grid-template-columns:40px 1fr;gap:14px;padding:14px;background:var(--surface);scroll-margin-top:70px}
+.base__item+.base__item{border-top:1px solid var(--line)}
+.base__name{margin:0;padding-top:4px;font:700 18px/1.2 var(--display)}
+.base__text{margin:4px 0 0;font-size:15.5px;line-height:1.5}
+.progress{display:flex;align-items:center;gap:12px;margin:0 0 4px;font:600 15px/1 var(--display);color:var(--ink-2)}
+.progress>span:last-child{padding-top:3px}
+.squares{display:flex;gap:3px}
+.squares i{width:14px;height:14px;border:2px solid var(--strong)}
+.squares i.on{background:var(--strong)}
+.place{display:grid;grid-template-columns:40px 1fr;gap:14px;padding:22px 0;border-bottom:1px solid var(--line);scroll-margin-top:70px}
+.place:last-child{border-bottom:0}
+.place__title{margin:0;padding-top:5px;font:700 21px/1.15 var(--display)}
+.place__sub{margin:3px 0 10px;font-size:16.5px;font-style:italic;color:var(--ink-2)}
+.place__text{margin:0 0 12px}
+.facts{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 18px;font:600 14px/1.25 var(--display);color:var(--ink-2)}
+.facts li{display:inline-flex;align-items:center;gap:6px}
+.facts .i{width:17px;height:17px;margin-top:-3px}
+.transit{display:flex;align-items:flex-start;gap:8px;margin:10px 0 0;font-size:15px}
+.transit .i{margin-top:2px}
+.tips{margin-top:12px}
+.tips summary{display:inline-flex;align-items:center;gap:8px;padding:6px 0 3px;border-bottom:2px solid var(--yellow);font:600 15px/1 var(--display);list-style:none;cursor:pointer}
+.tips summary::-webkit-details-marker{display:none}
+.tips summary::after{content:"+";font-weight:700}
+.tips[open] summary::after{content:"–"}
+.tips .list{margin-top:8px}
+.tips .list li{font-size:15.5px;line-height:1.5}
+.actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 0;padding:0;list-style:none}
+.chips button{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:3px 10px 0;border:1.5px solid var(--ink);background:var(--surface);font:600 13.5px/1 var(--display);cursor:pointer}
+.chips button:hover{background:var(--yellow);color:#000;border-color:#000}
+.chips .dot{width:9px;height:9px;margin-top:-3px;border-radius:50%;background:#5A3A28;border:1.5px solid #000}
+.done{margin-left:auto;display:inline-flex;align-items:center;gap:8px;padding:4px 0;font:600 14.5px/1 var(--display);cursor:pointer}
+.done span{padding-top:3px}
+.done input{appearance:none;-webkit-appearance:none;margin:0;width:24px;height:24px;display:grid;place-items:center;border:2px solid var(--ink);background:var(--surface);cursor:pointer}
+.done input::after{content:"";width:6px;height:12px;border:solid transparent;border-width:0 3px 3px 0;transform:translateY(-2px) rotate(45deg)}
+.done input:checked{background:var(--ok);border-color:var(--ok)}
+.done input:checked::after{border-color:#fff}
+.is-flash{animation:flash 1.4s ease-out}
+@keyframes flash{from{background-color:color-mix(in srgb,var(--yellow) 55%,transparent)}to{background-color:transparent}}
+
+/* ---------- Plan ---------- */
+.days{display:grid;grid-template-columns:repeat(3,1fr);border:2px solid var(--strong)}
+.day-btn{border:0;border-left:2px solid var(--strong);background:var(--surface);color:var(--ink);padding:11px 10px 8px;text-align:left;font:700 16px/1.1 var(--display);cursor:pointer}
+.day-btn:first-child{border-left:0}
+.day-btn small{display:block;margin-top:3px;font:400 13.5px/1.2 var(--text);color:var(--ink-2)}
+.day-btn[aria-pressed="true"]{background:var(--day);color:var(--day-ink)}
+.day-btn[aria-pressed="true"] small{color:inherit;opacity:.85}
+.day--ankunft{--day:#2F6B5E;--day-ink:#fff}
+.day--sa{--day:#9E1B32;--day-ink:#fff}
+.day--so{--day:#D9A21F;--day-ink:#000}
+.day-view .h2{margin-top:24px}
+.day-meta{display:flex;flex-wrap:wrap;gap:6px 18px;margin:0;font:600 14px/1.3 var(--display);color:var(--ink-2)}
+.day-meta span{display:inline-flex;align-items:center;gap:6px}
+.day-meta .i{width:17px;height:17px;margin-top:-3px}
+.timeline{list-style:none;margin:18px 0 0;padding:0}
+.timeline li{position:relative;display:grid;grid-template-columns:64px 16px 1fr;column-gap:12px}
+.timeline li::before{content:"";position:absolute;left:83px;top:0;bottom:0;width:2px;background:var(--day)}
+.timeline li:first-child::before{top:14px}
+.timeline li:last-child::before{bottom:auto;height:14px}
+.stop__time{grid-column:1;padding-top:8px;text-align:right;font:700 15px/1 var(--display)}
+.stop__node{grid-column:2;position:relative;z-index:1;width:16px;height:16px;margin-top:5px;background:var(--day);border:2px solid var(--strong)}
+.stop__body{grid-column:3;padding-bottom:4px}
+.stop__place{border:0;background:none;padding:4px 0 0;font:700 18px/1.2 var(--display);text-align:left;cursor:pointer;text-decoration:underline;text-decoration-color:var(--day);text-decoration-thickness:2px;text-underline-offset:4px}
+.stop__place:hover{text-decoration-thickness:4px}
+.stop__body p{margin:4px 0 0;font-size:15.5px;line-height:1.5}
+.stop__body .stop__extra{color:var(--ink-2);font-style:italic}
+.leg>span{grid-column:3;display:inline-flex;align-items:center;gap:6px;padding:12px 0 10px;font:600 13px/1 var(--display);color:var(--ink-2)}
+.leg .i{width:16px;height:16px;margin-top:-3px}
+.timeline .leg--ride::before{background:repeating-linear-gradient(var(--day) 0 5px,transparent 5px 10px)}
+.wx{display:grid;grid-template-columns:repeat(auto-fit,minmax(84px,1fr));border:2px solid var(--strong);background:var(--surface)}
+.wx__day{padding:12px 8px 10px;text-align:center;border-left:1px solid var(--line)}
+.wx__day:first-child{border-left:0}
+.wx__name{font:700 14px/1.15 var(--display)}
+.wx__date{font-size:13px;color:var(--ink-2)}
+.wx__emo{margin:6px 0 2px;font-size:26px;line-height:1.2}
+.wx__temp{font:600 15px/1.2 var(--display)}
+.wx__rain{font-size:13px;color:var(--ink-2)}
+.wx-note{margin:8px 0 0;font-size:14.5px;color:var(--ink-2)}
+.rain{border:2px solid var(--strong);padding:0 16px;background:var(--surface)}
+.rain summary{display:flex;justify-content:space-between;padding:14px 0 11px;font:700 18px/1.2 var(--display);list-style:none;cursor:pointer}
+.rain summary::-webkit-details-marker{display:none}
+.rain summary::after{content:"+"}
+.rain[open] summary::after{content:"–"}
+.rain[open]{padding-bottom:14px}
+.rain.is-alert{border-color:var(--alert);box-shadow:5px 5px 0 var(--alert)}
+.rain__alert{margin:0 0 6px;font-weight:600;color:var(--alert)}
+
+/* ---------- Beisln ---------- */
+.local__hint{margin:0 0 4px;font-size:14.5px;color:var(--ink-2)}
+.local__group{margin:28px 0 0;padding-bottom:8px;border-bottom:2px solid var(--strong);font:700 18px/1.2 var(--display)}
+.local{display:grid;grid-template-columns:40px 1fr;gap:14px;padding:20px 0;border-bottom:1px solid var(--line);scroll-margin-top:70px}
+.local__order{margin:0 0 6px;font-size:15.5px;line-height:1.5}
+.local__order strong{font:700 14.5px/1 var(--display)}
+.local__hours{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:10px 0 10px;font-size:14.5px;line-height:1.4;color:var(--ink-2)}
+.open-days{display:inline-flex;gap:3px}
+.open-days i{display:grid;place-items:center;width:30px;height:24px;padding-top:3px;border:2px solid var(--ok);background:var(--ok);color:#fff;font:700 12px/1 var(--display);font-style:normal}
+.open-days i.off{border-color:var(--line);background:transparent;color:var(--ink-2);text-decoration:line-through}
+.fchip.cat-local i{border-radius:50%}
+.stop__body .stop__alt{display:flex;align-items:flex-start;gap:7px;margin-top:6px;font-size:15px;color:var(--ink-2)}
+.stop__alt .i{width:16px;height:16px;margin-top:3px;flex:none}
+.stop__alt .linklike{color:var(--ink);font-weight:600}
+
+/* ---------- Kaffee ---------- */
+.cafes{list-style:none;margin:0;padding:0}
+.cafe{display:grid;grid-template-columns:40px 1fr;gap:14px;padding:16px 0;border-bottom:1px solid var(--line);scroll-margin-top:70px}
+.cafe__name{margin:0;padding-top:5px;font:700 18px/1.2 var(--display)}
+.cafe__sig{margin:2px 0 4px;font-style:italic;color:var(--ink-2)}
+.cafe__text{margin:0;font-size:15.5px;line-height:1.5}
+.cafe__dist{display:flex;align-items:center;gap:6px;margin:6px 0 0;font:600 13.5px/1.2 var(--display);color:var(--ink-2)}
+.cafe__dist .i{width:16px;height:16px;margin-top:-3px}
+.coffees{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:22px 18px}
+.coffee{margin:0;display:grid;grid-template-columns:58px 1fr;gap:10px;align-items:start}
+.cup-box{height:58px;display:flex;align-items:flex-end;justify-content:center;padding:0 8px 7px 0}
+.cup{position:relative;width:40px;height:34px;border:2px solid var(--ink);border-top:0;border-radius:0 0 13px 13px}
+.cup::before{content:"";position:absolute;left:-7px;right:-7px;bottom:-7px;height:3px;background:var(--ink);border-radius:2px}
+.cup::after{content:"";position:absolute;right:-10px;top:5px;width:8px;height:14px;border:2px solid var(--ink);border-left:0;border-radius:0 8px 8px 0}
+.cup--glass{width:28px;height:50px;border-radius:0 0 3px 3px}
+.cup--glass::after{display:none}
+.cup--glass::before{left:-3px;right:-3px}
+.cup--small{width:30px;height:26px;border-radius:0 0 10px 10px}
+.cup--small::after{top:3px;height:11px}
+.cup__fill{position:absolute;inset:0;border-radius:inherit;overflow:hidden;display:flex;flex-direction:column-reverse}
+.cup__fill b{flex:none;display:block}
+.l-mokka{background:#3A2216}.l-verl{background:#734A2E}.l-milch{background:#C69C72}.l-schaum{background:#F2E6D3}
+.l-obers{background:#FFFDF8}.l-rum{background:#7A3B12}.l-likoer{background:#E08A1E}.l-eis{background:#F3E3B5}.l-kalt{background:#4A2C1C}
+.coffee strong{display:block;padding-top:4px;font:700 17px/1.15 var(--display)}
+.coffee figcaption span{display:block;margin-top:3px;font-size:14.5px;line-height:1.45;color:var(--ink-2)}
+
+/* ---------- Bingo ---------- */
+.bingo{display:grid;grid-template-columns:repeat(3,1fr);max-width:420px;border:2px solid var(--strong);background:var(--surface)}
+.cell{position:relative;aspect-ratio:1/1;display:flex;flex-direction:column;justify-content:flex-end;gap:4px;padding:10px;border:0;border-right:2px solid var(--strong);border-bottom:2px solid var(--strong);background:none;color:var(--ink);text-align:left;cursor:pointer;overflow:hidden}
+.cell:nth-child(3n){border-right:0}
+.cell:nth-child(n+7){border-bottom:0}
+.cell strong{font:700 15.5px/1.1 var(--display);hyphens:manual;overflow-wrap:anywhere}
+.cell span{font:italic 13px/1.25 var(--text);color:var(--ink-2)}
+.cell:hover{background:color-mix(in srgb,var(--yellow) 22%,transparent)}
+.cell[aria-pressed="true"]{background:var(--strong);color:var(--on-strong)}
+.cell[aria-pressed="true"] span{color:inherit;opacity:.8}
+.cell[aria-pressed="true"]::after{content:"verputzt";position:absolute;top:10px;right:8px;padding:5px 8px 2px;border:2px solid #E0485C;border-radius:999px;color:#E0485C;font:700 11.5px/1 var(--display);transform:rotate(10deg);animation:stamp .35s var(--ease) both}
+@keyframes stamp{from{transform:rotate(-8deg) scale(1.8);opacity:0}to{transform:rotate(10deg) scale(1);opacity:1}}
+.cell.is-line{box-shadow:inset 0 0 0 4px #E0485C}
+.bingo__foot{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:420px;margin-top:14px}
+.bingo__foot p{margin:0;font:600 15px/1.3 var(--display)}
+
+/* ---------- Wienerisch ---------- */
+.words{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.word{position:relative;height:116px;padding:0;border:2px solid var(--strong);background:var(--surface);color:var(--ink);text-align:left;cursor:pointer;perspective:700px}
+.word__face{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:12px 14px;backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:transform .5s var(--ease)}
+.word__front strong{font:700 21px/1.1 var(--display)}
+.word__back{background:var(--strong);color:var(--on-strong);transform:rotateY(180deg)}
+.word__back .de{font:400 15px/1.3 var(--text)}
+.word__back .ch{display:flex;align-items:center;gap:7px;margin-top:7px;font:700 15px/1.2 var(--display)}
+.word__back .ch::before{content:"";flex:none;width:14px;height:14px;margin-top:-3px;background:linear-gradient(#fff,#fff) center/8px 2.6px no-repeat,linear-gradient(#fff,#fff) center/2.6px 8px no-repeat,#DA291C}
+.word.is-flipped .word__front{transform:rotateY(-180deg)}
+.word.is-flipped .word__back{transform:rotateY(0)}
+
+/* ---------- Karte: Overlays ---------- */
+.map-filters{position:absolute;z-index:1000;top:12px;left:12px;right:66px;display:flex;flex-wrap:wrap;gap:6px;pointer-events:none}
+.fchip{pointer-events:auto;display:inline-flex;align-items:center;gap:8px;height:34px;padding:3px 12px 0 9px;border:2px solid #000;background:#fff;color:#000;font:600 14px/1 var(--display);cursor:pointer;box-shadow:0 3px 0 #000}
+.fchip i{width:14px;height:14px;margin-top:-3px;border:2px solid #000;background:var(--pin-bg)}
+.fchip.cat-cafe i{border-radius:50%}
+.fchip:hover{background:#FFF6DC}
+.fchip[aria-pressed="false"]{color:#6A645B;text-decoration:line-through;text-decoration-thickness:2px}
+.fchip[aria-pressed="false"] i{background:transparent}
+.map-tools{position:absolute;z-index:1000;top:12px;right:12px;display:flex;flex-direction:column;gap:8px}
+.tool{width:42px;height:42px;display:grid;place-items:center;border:2px solid #000;background:#fff;color:#000;cursor:pointer;box-shadow:0 3px 0 #000}
+.tool:hover{background:#F1BE3A}
+.tool:active{transform:translateY(3px);box-shadow:none}
+.tool .i{width:22px;height:22px}
+.tool[aria-pressed="true"]{background:#000;color:#F1BE3A}
+#map.is-night:not(.is-photo) .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.82) contrast(.92) saturate(.5)}
+#map.is-night.is-photo .leaflet-tile-pane{filter:brightness(.8)}
+.map-error{position:absolute;inset:0;display:grid;place-content:center;gap:4px;padding:24px;text-align:center;background:var(--marble);color:var(--ink)}
+.map-error p{margin:0;max-width:40ch}
+
+/* ---------- Karte: Leaflet-Anpassungen ---------- */
+.leaflet-container{font-family:var(--text)}
+.leaflet-bar{border:2px solid #000!important;border-radius:0!important;box-shadow:0 3px 0 #000!important}
+.leaflet-bar a{width:38px!important;height:38px!important;border-radius:0!important;color:#000!important;font:700 20px/40px var(--display)!important}
+.leaflet-bar a:hover{background:#F1BE3A!important}
+.leaflet-control-attribution{font:12px/1.4 var(--text)!important}
+.pin-wrap,.step-wrap{background:none!important;border:0!important}
+.pin{position:relative;display:grid;place-items:center;width:34px;height:34px;border:2px solid #000;background:var(--pin-bg);color:var(--pin-ink);font:700 18px/1 var(--display);padding-top:4px;box-shadow:0 0 0 2px #fff,0 8px 12px -6px rgba(0,0,0,.55);transition:transform .15s var(--ease),opacity .25s}
+.pin--tail::after{content:"";position:absolute;left:50%;top:100%;margin:2px 0 0 -7px;border-style:solid;border-width:8px 7px 0;border-color:#000 transparent transparent}
+.pin--base{width:40px;height:40px;padding-top:0}
+.pin--base .i{width:24px;height:24px}
+.pin--round{width:28px;height:28px;padding-top:0;border-radius:50%}
+.pin--round .i{width:16px;height:16px}
+.pin.is-dim{opacity:.3;filter:grayscale(.7)}
+.pin.is-done::before{content:"";position:absolute;top:-9px;right:-9px;width:18px;height:18px;border-radius:50%;box-shadow:0 0 0 2px #fff;background:#2F6B5E url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7'/%3E%3C/svg%3E") center/12px no-repeat}
+.leaflet-marker-icon:hover .pin{transform:translateY(-3px)}
+.leaflet-marker-icon:focus{outline:none}
+.leaflet-marker-icon:focus-visible .pin{outline:3px solid #000;outline-offset:3px}
+.step{display:inline-block;padding:4px 5px 1px;border:2px solid #000;background:var(--day);color:var(--day-ink);font:700 12px/1 var(--display);white-space:nowrap;box-shadow:0 0 0 2px #fff}
+.step--left{transform:translateX(calc(-100% - var(--gap)))}
+.route{fill:none}
+.route--walk{stroke-dasharray:.1 11;stroke-linecap:round}
+.route--ride{stroke-dasharray:10 8;stroke-linecap:butt}
+.route-casing{stroke:#fff;stroke-opacity:.9}
+.route.day--ankunft{stroke:#2F6B5E}
+.route.day--sa{stroke:#9E1B32}
+.route.day--so{stroke:#C68B0E}
+.wien-popup .leaflet-popup-content-wrapper{padding:0;border-radius:0;background:var(--surface);color:var(--ink);border:2px solid var(--pop-border);box-shadow:6px 6px 0 #F1BE3A}
+.wien-popup .leaflet-popup-content{margin:14px 16px 16px;font:400 15px/1.45 var(--text)}
+.wien-popup .leaflet-popup-tip{background:var(--surface);border:2px solid var(--pop-border);box-shadow:none}
+.wien-popup a.leaflet-popup-close-button{top:4px;right:4px;width:30px;height:30px;color:var(--ink);font:400 24px/30px var(--display)}
+.pop__head{display:flex;align-items:flex-start;gap:12px;padding-right:18px}
+.pop__head .tile{width:34px;height:34px;font-size:18px}
+.pop__head .tile .i{width:19px;height:19px}
+.pop h3{margin:0;padding-top:5px;font:700 18px/1.15 var(--display)}
+.pop .pop__sub{margin:3px 0 0;font-style:italic;color:var(--ink-2)}
+.pop .pop__dist{display:flex;align-items:center;gap:6px;margin:10px 0 12px;font:600 13.5px/1.2 var(--display);color:var(--ink-2)}
+.pop__dist .i{width:16px;height:16px;margin-top:-3px}
+.pop__actions{display:flex;flex-wrap:wrap;gap:6px}
+.leaflet-container a.btn{color:var(--on-strong)}
+.leaflet-container a.btn--ghost{color:var(--ink)}
+
+/* ---------- Toast & Konfetti ---------- */
+.toast{position:fixed;left:50%;bottom:24px;z-index:2500;max-width:min(440px,calc(100vw - 32px));padding:13px 18px 10px;background:var(--strong);color:var(--on-strong);font:600 15px/1.35 var(--display);box-shadow:5px 5px 0 var(--hard);transform:translate(-50%,20px);opacity:0;pointer-events:none;transition:opacity .2s,transform .25s var(--ease)}
+.toast.is-on{opacity:1;transform:translate(-50%,0)}
+.confetti{position:fixed;inset:0;z-index:3000;overflow:hidden;pointer-events:none}
+.confetti i{position:absolute;left:50%;top:30%;width:9px;height:9px;border:1px solid rgba(0,0,0,.25);animation:confetti var(--d) cubic-bezier(.2,.6,.4,1) forwards}
+@keyframes confetti{from{transform:translate(-50%,0) rotate(0);opacity:1}to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
+
+/* ---------- Einstiegsmoment: die vier Kacheln ---------- */
+@media (prefers-reduced-motion:no-preference){
+  .wordmark span{animation:tile-in .6s var(--ease) both}
+  .wordmark span:nth-child(2){animation-delay:.08s}
+  .wordmark span:nth-child(3){animation-delay:.16s}
+  .wordmark span:nth-child(4){animation-delay:.24s}
+  .route--walk{animation:march 1.2s linear infinite}
+  .route--ride{animation:march-ride 1.2s linear infinite}
+}
+@keyframes tile-in{from{transform:rotateX(90deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes march{to{stroke-dashoffset:-11.1}}
+@keyframes march-ride{to{stroke-dashoffset:-18}}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
+/* ---------- Mobil ---------- */
+@media (max-width:860px){
+  body{height:auto;overflow:visible;display:block}
+  .app{display:flex;flex-direction:column}
+  .map-wrap{order:-1;height:54vh;height:54svh;min-height:340px;border-bottom:2px solid var(--strong)}
+  .panel{overflow:visible;border-right:0}
+  .tabs{padding:10px 12px 0}
+  .tabpanel{padding:20px 16px 56px}
+}
+@media (max-width:620px){
+  .masthead{flex-wrap:wrap;gap:10px 12px;padding:12px 16px 18px}
+  .wordmark span{width:36px;height:36px;font-size:23px;padding-top:5px}
+  .masthead__title{flex:1 1 140px}
+  .masthead__line{font-size:18px}
+  .masthead__sub{font-size:14.5px}
+  .chip{padding:3px 10px 0;font-size:14px}
+  .masthead__tools{width:100%;margin-left:0}
+  #weatherNow{margin-left:auto}
+  .popover{left:0;right:auto}
+  .map-filters{right:62px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;pointer-events:auto;scrollbar-width:none}
+  .map-filters::-webkit-scrollbar{display:none}
+  .fchip{flex:none;height:30px;padding:3px 9px 0 7px;font-size:13px}
+  .actions .done{margin-left:0}
+  .cell{padding:8px}
+  .cell strong{font-size:14px}
+  .cell span{font-size:12px}
+}
+@media (max-width:400px){
+  .wx-where{display:none}
+}
+</style>
+</head>
+<body>
+<header class="masthead">
+  <h1 class="wordmark" aria-label="Wien"><span aria-hidden="true">W</span><span aria-hidden="true">I</span><span aria-hidden="true">E</span><span aria-hidden="true">N</span></h1>
+  <div class="masthead__title">
+    <p class="masthead__line">Unser Wochenende</p>
+    <p class="masthead__sub">Schnitzel, Sachertorte und Schmäh</p>
+  </div>
+  <div class="masthead__tools">
+    <details class="trip" id="trip">
+      <summary class="chip" data-icon="calendar"><span id="countdownText">Reisedatum wählen</span></summary>
+      <div class="popover">
+        <label class="popover__label" for="tripDate">Wann kommt ihr an?</label>
+        <input type="date" id="tripDate" class="date-input">
+        <p class="popover__hint">Der Plan zeigt dann eure Daten, das Wetter fürs Wochenende und den Sonnenuntergang.</p>
+        <button type="button" class="btn btn--sm btn--ghost" id="tripClear">Datum löschen</button>
+      </div>
+    </details>
+    <button type="button" class="chip" id="weatherNow" title="Wetter in Wien">Wetter lädt …</button>
+    <button type="button" class="chip chip--icon" id="themeToggle" aria-label="Nachtmodus einschalten"></button>
+  </div>
+</header>
+
+<main class="app">
+  <section class="panel" aria-label="Reiseführer">
+    <div class="tabs" role="tablist" aria-label="Bereiche">
+      <button type="button" class="tab" role="tab" id="tab-orte" data-tab="orte" aria-controls="panel-orte">Orte</button>
+      <button type="button" class="tab" role="tab" id="tab-plan" data-tab="plan" aria-controls="panel-plan">Plan</button>
+      <button type="button" class="tab" role="tab" id="tab-beisl" data-tab="beisl" aria-controls="panel-beisl">Beisln</button>
+      <button type="button" class="tab" role="tab" id="tab-kaffee" data-tab="kaffee" aria-controls="panel-kaffee">Kaffee</button>
+      <button type="button" class="tab" role="tab" id="tab-bingo" data-tab="bingo" aria-controls="panel-bingo">Bingo</button>
+      <button type="button" class="tab" role="tab" id="tab-wort" data-tab="wort" aria-controls="panel-wort">Wienerisch</button>
+    </div>
+
+    <section class="tabpanel" role="tabpanel" id="panel-orte" data-panel="orte" aria-labelledby="tab-orte">
+      <div id="base"></div>
+      <h2 class="h2" style="margin-top:30px">Acht Dinge, die wir erleben wollen</h2>
+      <div class="progress" id="progress"></div>
+      <div id="places"></div>
+    </section>
+
+    <section class="tabpanel" role="tabpanel" id="panel-plan" data-panel="plan" aria-labelledby="tab-plan" hidden>
+      <div class="days" id="dayButtons" role="group" aria-label="Tag wählen"></div>
+      <div class="day-view" id="dayView"></div>
+      <section class="block" id="weatherBlock" aria-labelledby="wx-h">
+        <h2 class="h3" id="wx-h">Wetter</h2>
+        <div id="weatherStrip"><p class="wx-note">Wetterdaten werden geladen …</p></div>
+      </section>
+      <details class="block rain" id="rainPlan">
+        <summary>Plan B bei Regen</summary>
+        <p class="rain__alert" id="rainAlert" hidden>Für euer Wochenende ist Regen angesagt. Hier sind die besten Ausweichpläne.</p>
+        <ul class="list">
+          <li>Katakomben-Führung im Stephansdom statt Turmbesteigung.</li>
+          <li>Kaffeehaus-Marathon: Café Sperl und Café Hawelka sind bei Regen am gemütlichsten.</li>
+          <li>In Schönbrunn die Grand Tour innen, danach direkt ins Café Residenz.</li>
+          <li>Das Kunsthistorische Museum liegt 15 Minuten vom Hotel – mit einem der schönsten Museumscafés der Welt unter der Kuppel.</li>
+        </ul>
+      </details>
+      <section class="block" aria-labelledby="oeffi-h">
+        <h2 class="h3" id="oeffi-h">Unterwegs mit den Öffis</h2>
+        <ul class="list">
+          <li>Ein 48- oder 72-Stunden-Ticket der Wiener Linien gilt für U-Bahn, Bim und Bus in ganz Wien.</li>
+          <li>Die App «WienMobil» zeigt Verbindungen und verkauft Tickets direkt aufs Handy.</li>
+          <li>Papiertickets vor der ersten Fahrt am Stationseingang entwerten – kontrolliert wird oft.</li>
+          <li>Die Innere Stadt ist klein: Zwischen Hotel, Dom und Sacher seid ihr zu Fuss meist schneller.</li>
+        </ul>
+      </section>
+    </section>
+
+    <section class="tabpanel" role="tabpanel" id="panel-beisl" data-panel="beisl" aria-labelledby="tab-beisl" hidden>
+      <h2 class="h2">Essen wie die Wiener</h2>
+      <p class="lead">Beisln, ein Heuriger und ein Würstelstand – Lokale, in denen vor allem Wienerinnen und Wiener sitzen. Ein Beisl ist übrigens das Wiener Gegenstück zur Beiz.</p>
+      <p class="local__hint" id="localsHint"></p>
+      <div id="locals"></div>
+      <h2 class="h2">Beisl-Knigge</h2>
+      <ul class="list">
+        <li>Echte Beisln haben Ruhetage, oft Sonntag, Montag oder Dienstag. Darum stehen bei jedem Lokal die offenen Tage.</li>
+        <li>Reserviert wird am Telefon – viele Wirte machen keine Online-Buchungen.</li>
+        <li>Zum Schnitzel gehört Erdäpfel- oder Gurkensalat, dazu ein Seidl oder ein Gspritzter.</li>
+        <li>Ein grüner Föhrenbuschen über der Tür heisst: Der Heurige ist «ausg’steckt», also offen.</li>
+        <li>Am Würstelstand bestellt ihr wie ein Wiener: «A Eitrige mit an Buckl und an Sechzehnerblech» – Käsekrainer mit dem Brotscherzl und einer Dose Ottakringer Bier.</li>
+        <li>Kleine Lokale nehmen manchmal nur Bargeld.</li>
+      </ul>
+      <p class="fact">Öffnungszeiten Stand Oktober 2026, laut Falter und den Lokalen selbst. Ruhetage ändern sich gern – ein kurzer Anruf lohnt sich.</p>
+    </section>
+
+    <section class="tabpanel" role="tabpanel" id="panel-kaffee" data-panel="kaffee" aria-labelledby="tab-kaffee" hidden>
+      <h2 class="h2">Kaffeehäuser</h2>
+      <p class="lead">Marmortische, Thonet-Stühle, Zeitungen im Holzhalter. Das Café Sacher findet ihr bei Nummer&nbsp;1.</p>
+      <div id="cafes"></div>
+      <h2 class="h2">Was bestelle ich?</h2>
+      <p class="lead">Wer in Wien «einen Kaffee» bestellt, erntet einen fragenden Blick. So heissen die Klassiker:</p>
+      <div class="coffees" id="coffees"></div>
+      <h2 class="h2">Kaffeehaus-Knigge</h2>
+      <ul class="list">
+        <li>Zu jedem Kaffee kommt ein Glas Wasser – gratis, und es wird nachgefüllt.</li>
+        <li>Eine Melange reicht, um stundenlang sitzen zu bleiben. Niemand drängt euch.</li>
+        <li>Den Kellner ruft man «Herr Ober». Gezahlt wird am Tisch.</li>
+        <li>Trinkgeld (rund 10 %) sagt ihr beim Zahlen gleich dazu: «Machen wir 20.»</li>
+        <li>Kleinere Kaffeehäuser nehmen manchmal nur Bargeld – ein paar Euro dabeihaben.</li>
+      </ul>
+      <p class="fact">Die Wiener Kaffeehauskultur steht seit 2011 im österreichischen Verzeichnis des immateriellen UNESCO-Kulturerbes.</p>
+    </section>
+
+    <section class="tabpanel" role="tabpanel" id="panel-bingo" data-panel="bingo" aria-labelledby="tab-bingo" hidden>
+      <h2 class="h2">Süss-Bingo</h2>
+      <p class="lead">Jede probierte Süssspeise abhaken. Drei in einer Reihe ergeben ein Bingo – waagrecht, senkrecht oder diagonal. Unter jedem Namen steht, wo sie besonders gut ist.</p>
+      <div class="bingo" id="bingoGrid" role="group" aria-label="Süss-Bingo"></div>
+      <div class="bingo__foot">
+        <p id="bingoStatus" aria-live="polite"></p>
+        <button type="button" class="btn btn--sm btn--ghost" id="bingoReset">Neu anfangen</button>
+      </div>
+    </section>
+
+    <section class="tabpanel" role="tabpanel" id="panel-wort" data-panel="wort" aria-labelledby="tab-wort" hidden>
+      <h2 class="h2">Wienerisch für Schweizer</h2>
+      <p class="lead">Antippen zum Umdrehen. Vorne Wienerisch, hinten Hochdeutsch und die Schweizer Entsprechung.</p>
+      <div class="words" id="words"></div>
+    </section>
+  </section>
+
+  <section class="map-wrap" aria-label="Karte von Wien">
+    <div id="map"></div>
+    <div class="map-filters" id="filters" role="group" aria-label="Kategorien auf der Karte"></div>
+    <div class="map-tools">
+      <button type="button" class="tool" id="toolHotel" data-icon="home" aria-label="Zum Hotel" title="Zum Hotel"></button>
+      <button type="button" class="tool" id="toolLocate" data-icon="locate" aria-label="Wo bin ich?" title="Wo bin ich?"></button>
+      <button type="button" class="tool" id="toolFit" data-icon="expand" aria-label="Alle Orte zeigen" title="Alle Orte zeigen"></button>
+      <button type="button" class="tool" id="toolLayer" data-icon="layers" aria-label="Luftbild" title="Luftbild zeigen" aria-pressed="false"></button>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<noscript><p style="padding:16px">Diese Seite braucht JavaScript für Karte und Plan.</p></noscript>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+(function () {
+'use strict';
+
+/* =====================================================================
+   Daten
+   ===================================================================== */
+
+const HOTEL = {
+  id: 'hotel', cat: 'base', icon: 'bed', name: 'Hotel Rathauspark', sub: 'Unser Hotel',
+  lat: 48.21328, lng: 16.35685,
+  text: 'Unsere Basis direkt hinter dem Rathaus. Burgtheater, Café Landtmann und der Ring sind gleich ums Eck – das meiste erreicht ihr zu Fuss.'
+};
+const HBF = {
+  id: 'hbf', cat: 'base', icon: 'train', name: 'Wien Hauptbahnhof', sub: 'Ankunft und Abreise',
+  lat: 48.18499, lng: 16.37794,
+  text: 'Zum Hotel: Tram D Richtung Nussdorf bis «Rathausplatz/Burgtheater», rund 20 Minuten, dann 5 Minuten zu Fuss. Unterwegs ziehen Belvedere, Oper und Parlament vorbei.'
+};
+const BASE = [HOTEL, HBF];
+
+const PLACES = [
+  {
+    id: 'sacher', n: 1, cat: 'food', name: 'Hotel Sacher', sub: 'Die Original Sacher-Torte',
+    lat: 48.20404, lng: 16.36977,
+    text: 'Das Grand Hotel hinter der Staatsoper ist der Geburtsort der berühmtesten Torte der Welt: 1832 erfand der 16-jährige Kochlehrling Franz Sacher sie für Fürst Metternich. Im roten Plüsch des Café Sacher gehören eine Melange und ungesüsstes Schlagobers dazu.',
+    tips: [
+      'Vormittags oder am späten Nachmittag ist die Schlange vor dem Café am kürzesten.',
+      'Im Sacher-Shop nebenan gibt’s die Torte in der Holzkiste – das Mitbringsel schlechthin.',
+      'Sacher und Demel stritten jahrzehntelang vor Gericht ums «Original». Seit 1963 darf nur Sacher es draufschreiben.'
+    ],
+    dauer: 'ca. 1 Std.', preis: '€€', transit: 'Tram D oder 71 bis Oper/Karlsplatz'
+  },
+  {
+    id: 'dom', n: 2, cat: 'sight', name: 'Stephansdom', sub: 'Der «Steffl», Herz der Stadt',
+    lat: 48.20849, lng: 16.37313,
+    text: 'Gotische Kathedrale mit dem bunten Dach aus rund 230’000 glasierten Ziegeln. Der 136 Meter hohe Südturm, den die Wiener liebevoll «Steffl» nennen, war lange einer der höchsten Kirchtürme Europas.',
+    tips: [
+      '343 Stufen führen auf den Südturm – die beste Aussicht über die Altstadt.',
+      'Bequemer: Mit dem Lift in den Nordturm zur Pummerin, der grössten Glocke Österreichs.',
+      'In den Katakomben ruhen Gebeine aus Pestzeiten und die Eingeweide der Habsburger in Kupferurnen.'
+    ],
+    dauer: '1–2 Std.', preis: 'Kirche gratis, Türme extra'
+  },
+  {
+    id: 'schoenbrunn', n: 3, cat: 'sight', name: 'Schloss Schönbrunn', sub: 'Sommerresidenz der Habsburger',
+    lat: 48.18499, lng: 16.31157,
+    text: '1441 Räume, ein riesiger Barockgarten und auf dem Hügel die Gloriette – von dort liegt euch ganz Wien zu Füssen. Hier lebten Maria Theresia, Franz Joseph und Sisi.',
+    tips: [
+      'Zeitfenster-Tickets online kaufen, sonst wartet ihr an der Kasse.',
+      'Die Grand Tour (40 Räume) lohnt sich mehr als die kurze Imperial Tour (22 Räume).',
+      'Der Tiergarten nebenan ist der älteste noch bestehende Zoo der Welt, gegründet 1752.',
+      'Im Café Residenz zeigt man euch bei der Strudel-Show, wie hauchdünn der Teig sein muss.'
+    ],
+    dauer: '3–4 Std.', preis: 'Park gratis, Touren €€', transit: 'U4 ab Karlsplatz bis «Schönbrunn», ca. 10 Min'
+  },
+  {
+    id: 'reitschule', n: 4, cat: 'sight', name: 'Spanische Hofreitschule', sub: 'Lipizzaner im Barocksaal',
+    lat: 48.20725, lng: 16.36660,
+    text: 'Seit über 450 Jahren wird hier klassische Reitkunst gepflegt. Die weissen Lipizzaner-Hengste tanzen unter Kronleuchtern in der Winterreitschule der Hofburg – UNESCO-Kulturerbe.',
+    tips: [
+      'Vorführungen gibt’s oft am Wochenende vormittags. Spielplan auf srs.at prüfen und früh buchen.',
+      'Günstiger und entspannter: die Morgenarbeit, das Training der Hengste mit Musik.',
+      'Es gibt auch Führungen hinter die Kulissen, inklusive Stallungen.'
+    ],
+    dauer: 'ca. 1,5 Std.', preis: '€€ bis €€€', transit: 'Schönster Weg: zu Fuss durch den Volksgarten'
+  },
+  {
+    id: 'prater', n: 5, cat: 'sight', name: 'Prater und Riesenrad', sub: 'Seit 1766 für alle offen',
+    lat: 48.21674, lng: 16.39591,
+    text: 'Das Riesenrad dreht sich seit 1897 – 65 Meter über der Stadt, in roten Waggons. Rundherum: Achterbahnen, das Kettenkarussell im 117 Meter hohen Praterturm und die kilometerlange Hauptallee zum Spazieren.',
+    tips: [
+      'Fahrt zur blauen Stunde, wenn unten die Lichter angehen.',
+      'Stelze und Budweiser im Schweizerhaus – Biergarten-Saison von März bis Ende Oktober.',
+      'Der Eintritt ist frei, bezahlt wird pro Fahrt.'
+    ],
+    dauer: '2–3 Std.', preis: 'Eintritt frei, Fahrten einzeln', transit: 'U1 ab Stephansplatz bis Praterstern, 3 Stationen'
+  },
+  {
+    id: 'fiaker', n: 6, cat: 'sight', name: 'Fiaker-Fahrt', sub: 'Die Altstadt im Pferdetakt',
+    lat: 48.20800, lng: 16.36600,
+    text: 'Zwei Pferde, ein Kutscher mit Melone und eine Extraportion Wiener Schmäh: So seht ihr die Innere Stadt wie zu Kaisers Zeiten. Standplätze gibt’s am Michaelerplatz, am Stephansplatz, am Heldenplatz und bei der Albertina.',
+    tips: [
+      'Preis und Route vor dem Einsteigen fix ausmachen – meist gibt’s eine kurze (ca. 20 Min) und eine lange Runde (ca. 40 Min).',
+      'Ein «Fiaker» ist auch ein Kaffee: Mokka mit Rum und Schlagobers. Passt perfekt danach.',
+      'Der Name stammt von einem Pariser Kutschenverleih beim Hôtel Saint-Fiacre.'
+    ],
+    dauer: '20–40 Min.', preis: '€€€ pro Kutsche'
+  },
+  {
+    id: 'figlmueller', n: 7, cat: 'food', name: 'Figlmüller', sub: 'Das Schnitzel, das über den Teller ragt',
+    lat: 48.20942, lng: 16.37484,
+    text: 'Ja, er heisst wirklich Figlmüller 😉 Seit 1905 wird hier das Schnitzel so dünn geklopft, bis es rund 30 Zentimeter misst und über den Tellerrand ragt. Das Stammhaus versteckt sich in einem Durchgang zwischen Wollzeile und Stephansplatz.',
+    tips: [
+      'Unbedingt reservieren – ohne Tisch wartet ihr lange.',
+      'Dazu gehört Erdäpfel-Vogerlsalat, auf gut Schweizerisch Kartoffel-Nüsslisalat.',
+      'Das Figlmüller-Schnitzel ist vom Schwein. Ein echtes «Wiener Schnitzel» muss vom Kalb sein – das gibt’s klassisch bei Meissl & Schadn am Schubertring.',
+      'Im Stammhaus gibt’s traditionell kein Bier, nur Wein. Wer ein Krügerl will, geht in die Filiale in der Bäckerstrasse.'
+    ],
+    dauer: 'ca. 1,5 Std.', preis: '€€'
+  },
+  {
+    id: 'suess', n: 8, cat: 'cafe', group: true, name: 'Jede Menge Süssspeisen mit Kaffee', sub: 'Die grosse Kaffeehaus-Tour',
+    text: 'Wiener Kaffeehäuser sind die Wohnzimmer der Stadt. Sieben Adressen, die sich lohnen – alle mit Torten-Vitrine:'
+  }
+];
+
+const CAFES = [
+  { id: 'landtmann', cat: 'cafe', name: 'Café Landtmann', sig: 'Frühstück und Esterházy-Schnitte', lat: 48.21156, lng: 16.36145,
+    text: 'Gleich ums Eck vom Hotel, neben dem Burgtheater. Sigmund Freud war hier Stammgast.' },
+  { id: 'central', cat: 'cafe', name: 'Café Central', sig: 'Säulenhalle und Topfenstrudel', lat: 48.21037, lng: 16.36539,
+    text: 'Prunkvolle Säulenhalle im Palais Ferstel. Früh kommen – ab Mittag steht die Schlange bis auf die Herrengasse.' },
+  { id: 'demel', cat: 'cafe', name: 'Demel', sig: 'Anna-Torte und Kaiserschmarrn', lat: 48.20861, lng: 16.36721,
+    text: 'Zuckerbäckerei seit 1786, später k. u. k. Hoflieferant. Durchs Fenster schaut ihr direkt in die Backstube.' },
+  { id: 'hawelka', cat: 'cafe', name: 'Café Hawelka', sig: 'Warme Buchteln', lat: 48.20796, lng: 16.36981,
+    text: 'Plüschig, dunkel, legendär: das Künstlercafé der Nachkriegszeit. Berühmt für seine Buchteln aus dem Ofen.' },
+  { id: 'sperl', cat: 'cafe', name: 'Café Sperl', sig: 'Sperl-Torte und Billard', lat: 48.19984, lng: 16.36117,
+    text: 'Seit 1880 kaum verändert – Billardtische, Logen, Zeitungen. Ein Kaffeehaus wie aus dem Bilderbuch.' },
+  { id: 'gloriette', cat: 'cafe', name: 'Café Gloriette', sig: 'Melange mit Aussicht', lat: 48.17827, lng: 16.30873,
+    text: 'Im Prunkbau auf dem Hügel über Schönbrunn – der schönste Blick der Stadt zum Kaffee.' },
+  { id: 'residenz', cat: 'cafe', name: 'Café Residenz', sig: 'Apfelstrudel-Show', lat: 48.18620, lng: 16.31380,
+    text: 'Im Kavalierstrakt von Schönbrunn. Bei der Strudel-Show wird der Teig so dünn gezogen, dass man eine Zeitung hindurch lesen könnte.' }
+];
+
+const DAYS = [
+  { id: 'ankunft', label: 'Ankunft', hint: 'Anreisetag', title: 'Ankommen und durchatmen', stops: [
+    { t: 'Ankunft', ref: 'hbf', note: 'Tram D Richtung Nussdorf bis «Rathausplatz/Burgtheater», ca. 20 Minuten.',
+      alt: { ref: 'meixner', before: 'Schon hungrig?', after: 'liegt 15 Minuten vom Bahnhof (So Ruhetag).' } },
+    { t: 'Check-in', ref: 'hotel', note: 'Koffer abstellen, kurz die Beine hochlegen.' },
+    { t: 'Abends', ref: 'rebhuhn', note: 'Das erste Schnitzel wie die Einheimischen, gleich ums Eck vom Hotel.' }
+  ]},
+  { id: 'sa', label: 'Samstag', hint: 'Tag 1', title: 'Kaiserliche Innenstadt', stops: [
+    { t: '09:00', ref: 'central', note: 'Frühstück im Säulensaal. Wer früh da ist, muss nicht anstehen.' },
+    { t: '11:00', ref: 'reitschule', note: 'Lipizzaner-Vorführung oder Morgenarbeit – Termine vorab prüfen.' },
+    { t: '12:30', ref: 'fiaker', note: 'Fiaker-Runde ab Michaelerplatz, gleich vor der Tür der Reitschule.' },
+    { t: '13:30', ref: 'figlmueller', note: 'Schnitzel! Tisch am besten vorher reservieren.',
+      alt: { ref: 'poeschl', before: 'Ohne Touristenschlange:', after: 'beim Franziskanerplatz, 5 Minuten entfernt.' } },
+    { t: '15:00', ref: 'dom', note: '343 Stufen auf den Südturm – Verdauungsspaziergang mit Aussicht.' },
+    { t: '16:30', ref: 'demel', note: 'Kaffee und Anna-Torte, mit Blick in die Backstube.' },
+    { t: '18:30', ref: 'prater', note: 'Riesenrad zur blauen Stunde, danach Stelze im Schweizerhaus.', sunset: true,
+      alt: { ref: 'moeslinger', before: 'Lieber unter Wienern:', after: 'im Stuwerviertel, 10 Minuten vom Riesenrad.' } }
+  ]},
+  { id: 'so', label: 'Sonntag', hint: 'Tag 2', title: 'Schloss, Strudel, Sacher', stops: [
+    { t: '09:00', ref: 'landtmann', note: 'Gemütliches Frühstück gleich beim Hotel.' },
+    { t: '10:00', ref: 'schoenbrunn', note: 'Grand Tour durchs Schloss – Zeitfenster-Ticket online buchen.' },
+    { t: '12:00', ref: 'gloriette', note: 'Durch den Park hinauf zur Gloriette, Melange mit Aussicht.' },
+    { t: '13:30', ref: 'residenz', note: 'Apfelstrudel-Show und ein spätes Mittagessen.' },
+    { t: '15:30', ref: 'sacher', note: 'Zum Abschluss: die Original Sacher-Torte.' },
+    { t: '17:00', ref: 'hbf', note: 'Ab Karlsplatz mit der U1 zwei Stationen zum Hauptbahnhof.' }
+  ]}
+];
+
+const SWEETS = [
+  { id: 'esterhazy', name: 'Esterházy-Schnitte', where: 'Café Landtmann' },
+  // ­ = weiche Trennstelle, damit lange Wörter in schmale Bingo-Felder passen
+  { id: 'apfelstrudel', name: 'Apfel­strudel', where: 'Café Residenz' },
+  { id: 'buchteln', name: 'Buchteln', where: 'Café Hawelka' },
+  { id: 'kaiserschmarrn', name: 'Kaiser­schmarrn', where: 'Demel' },
+  { id: 'sachertorte', name: 'Sacher-Torte', where: 'Café Sacher' },
+  { id: 'punschkrapferl', name: 'Punsch­krapferl', where: 'Aida – alles in Rosa' },
+  { id: 'topfenstrudel', name: 'Topfen­strudel', where: 'Café Central' },
+  { id: 'annatorte', name: 'Anna-Torte', where: 'Demel' },
+  { id: 'sperltorte', name: 'Sperl-Torte', where: 'Café Sperl' }
+];
+const BINGO_LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+
+const COFFEES = [
+  { name: 'Melange', desc: 'Mokka mit heisser Milch und Milchschaum. Der Wiener Klassiker.', layers: [['mokka', 42], ['milch', 28], ['schaum', 22]] },
+  { name: 'Einspänner', desc: 'Starker Mokka im Glas mit einer Haube Schlagobers.', cup: 'glass', layers: [['mokka', 58], ['obers', 34]] },
+  { name: 'Verlängerter', desc: 'Mokka, mit heissem Wasser verlängert – ähnlich wie ein Café Crème.', layers: [['verl', 88]] },
+  { name: 'Kleiner Brauner', desc: 'Ein Mokka, das Obers kommt im Kännchen dazu.', cup: 'small', layers: [['mokka', 70], ['milch', 16]] },
+  { name: 'Franziskaner', desc: 'Wie eine Melange, nur mit Schlagobers statt Milchschaum.', layers: [['mokka', 40], ['milch', 22], ['obers', 30]] },
+  { name: 'Fiaker', desc: 'Mokka mit einem Schuss Rum und Schlagobers.', cup: 'glass', layers: [['rum', 14], ['mokka', 46], ['obers', 32]] },
+  { name: 'Maria Theresia', desc: 'Mokka mit Orangenlikör und Schlagobers.', layers: [['likoer', 16], ['mokka', 44], ['obers', 32]] },
+  { name: 'Wiener Eiskaffee', desc: 'Kalter Kaffee mit Vanilleeis und Schlagobers – nichts für Puristen.', cup: 'glass', layers: [['eis', 28], ['kalt', 32], ['obers', 32]] }
+];
+
+const WORDS = [
+  ['Servus!', 'Hallo und Tschüss in einem', 'Sali / Hoi'],
+  ['Baba!', 'Tschüss', 'Ciao / Adieu'],
+  ['Grüß Gott', 'Guten Tag', 'Grüezi'],
+  ['leiwand', 'super, grossartig', 'mega / lässig'],
+  ['Oida!', 'Ausruf für fast alles', 'Alte! / Hey Mann!'],
+  ['Schmäh', 'Wiener Humor, charmanter Spruch', 'Witz, Sprüch'],
+  ['Bim', 'Strassenbahn', 'Tram'],
+  ['Gehsteig', 'Gehweg', 'Trottoir'],
+  ['Schlagobers', 'Schlagsahne', 'Schlagrahm'],
+  ['Erdäpfel', 'Kartoffeln', 'Härdöpfel'],
+  ['Paradeiser', 'Tomaten', 'Tomate'],
+  ['Marillen', 'Aprikosen', 'Aprikose'],
+  ['Topfen', 'Quark', 'Quark'],
+  ['Vogerlsalat', 'Feldsalat', 'Nüsslisalat'],
+  ['Sackerl', 'Tüte', 'Säckli'],
+  ['Krügerl', 'Bier, 0,5 Liter', 'e Grosses'],
+  ['Seidl', 'Bier, 0,3 Liter', 'e Stange'],
+  ['Gspritzter', 'Weisswein mit Soda', 'Gspritzte'],
+  ['Haberer', 'Kumpel', 'Kolleg'],
+  ['hackeln', 'arbeiten', 'chrampfe'],
+  ['Gemma!', 'Gehen wir!', 'Gömmer!'],
+  ['Heast!', 'Hör mal!', 'Los emal!'],
+  ['Beisl', 'Einfaches Wiener Wirtshaus', 'Beiz'],
+  ['Eitrige', 'Käsekrainer vom Würstelstand', 'Käsekrainer'],
+  ['ausg’steckt', 'Der Heurige hat offen', 'hät offe'],
+  ['Achterl', 'Glas Wein, 1/8 Liter', 'gut es Dezi']
+];
+
+// Lokale, in denen vor allem Wiener sitzen. Öffnungszeiten Stand Oktober 2026 (Falter, Betreiberseiten).
+// open: Wochentage mit Betrieb (0 = Sonntag). season: nur in diesem Zeitraum offen (Heuriger).
+const LOCALS = [
+  { id: 'rebhuhn', cat: 'local', group: 'near', kind: 'Beisl', name: 'Gasthaus Rebhuhn', sub: 'Beisl im 9. Bezirk, Alsergrund',
+    lat: 48.21870, lng: 16.36405, tel: '+4313195058', open: [0, 1, 2, 3, 4, 5, 6],
+    zeiten: 'Täglich, am Wochenende teils erst ab 18 Uhr',
+    text: 'Klassisches Wiener Gasthaus in der Rossau, ein paar Häuser vom Sigmund Freud Museum (Berggasse 19). Hier sitzt das Grätzl, keine Reisegruppen.',
+    order: 'Ein Schnitzel und ein Seidl dazu' },
+  { id: 'poeschl', cat: 'local', group: 'near', kind: 'Beisl', name: 'Gasthaus Pöschl', sub: 'Beisl im 1. Bezirk, beim Franziskanerplatz',
+    lat: 48.20671, lng: 16.37389, tel: '+4315135288', open: [1, 2, 3, 4, 5, 6],
+    zeiten: 'Mo–Sa 12–23 Uhr, So Ruhetag',
+    text: 'Kleines Beisl mitten in der City, in dem mittags vor allem Einheimische sitzen. Die beste Ausweichadresse, wenn die Schlange beim Figlmüller zu lang ist.',
+    order: 'Wiener Klassiker von der Tageskarte' },
+  { id: 'gmoakeller', cat: 'local', group: 'near', kind: 'Wirtshaus', name: 'Gmoakeller', sub: 'Wirtshaus im 3. Bezirk, beim Konzerthaus',
+    lat: 48.20043, lng: 16.37862, tel: '+4317125310', open: [1, 2, 3, 4, 5, 6],
+    zeiten: 'Mo–Sa 11–24 Uhr, So Ruhetag',
+    text: 'Traditionswirtshaus zwischen Konzerthaus und Eislaufverein. Hier essen Konzertbesucher und Leute aus der Nachbarschaft – Touristen findet man selten.',
+    order: 'Wiener Klassiker und ein Achterl Wein' },
+  { id: 'ubl', cat: 'local', group: 'graetzl', kind: 'Beisl', name: 'Gasthaus Ubl', sub: 'Beisl im 4. Bezirk, Freihausviertel',
+    lat: 48.19644, lng: 16.36242, tel: '+4315876437', open: [0, 3, 4, 5, 6],
+    zeiten: 'Mi–So 12–14 und 18–24 Uhr',
+    text: 'Altwiener Beisl im Freihausviertel, ein paar Schritte vom Naschmarkt. So altmodisch, dass man nur telefonisch reservieren kann.',
+    order: 'Hausmannskost wie bei der Wiener Oma' },
+  { id: 'fassl', cat: 'local', group: 'graetzl', kind: 'Gasthaus', name: 'Zum Alten Fassl', sub: 'Gasthaus im 5. Bezirk, Margareten',
+    lat: 48.19156, lng: 16.36042, tel: '+4315444298', open: [0, 1, 2, 3, 4, 5, 6],
+    zeiten: 'Täglich ab 17 Uhr, So auch 12–15 Uhr',
+    text: 'Gemütliches Grätzl-Gasthaus in Margareten, unter Wienern bekannt fürs Schnitzel. Abends sitzen hier vor allem Stammgäste.',
+    order: 'Wiener Schnitzel mit Erdäpfelsalat' },
+  { id: 'moeslinger', cat: 'local', group: 'graetzl', kind: 'Wirtshaus', name: 'Gasthaus Möslinger', sub: 'Wirtshaus im 2. Bezirk, Stuwerviertel',
+    lat: 48.21868, lng: 16.39933, tel: '+4317280195', open: [0, 3, 4, 5, 6],
+    zeiten: 'Mi–Sa 12–22.30, So 12–21.30 Uhr',
+    text: 'Ehrliches Wirtshaus im Stuwerviertel, zehn Minuten zu Fuss vom Riesenrad. Die ruhige Alternative zum vollen Schweizerhaus.',
+    order: 'Wiener Küche und ein frisch gezapftes Krügerl' },
+  { id: 'kopp', cat: 'local', group: 'graetzl', kind: 'Gasthaus', name: 'Gasthaus Kopp', sub: 'Gasthaus im 20. Bezirk, Brigittenau',
+    lat: 48.23787, lng: 16.38710, tel: '+4313304392', open: [0, 3, 4, 5, 6],
+    zeiten: 'Mi–So 10–23 Uhr, Küche bis 21.30',
+    text: 'Weit weg von jeder Sehenswürdigkeit – genau deshalb so echt. Das Schnitzel ist so gross, dass es auf einem Holzbrett serviert wird.',
+    order: 'Das Riesenschnitzel – zu zweit teilen ist keine Schande',
+    tip: 'Eventuell nur Bargeld – ein paar Euro dabeihaben.' },
+  { id: 'quell', cat: 'local', group: 'graetzl', kind: 'Beisl', name: 'Gasthaus Quell', sub: 'Beisl im 15. Bezirk, Rudolfsheim',
+    lat: 48.18922, lng: 16.33036, tel: '+4318932407', open: [1, 2, 3, 4, 5],
+    zeiten: 'Mo–Fr 11–24 Uhr, Sa/So Ruhetag',
+    text: 'Altwiener Beisl wie aus dem Bilderbuch, mitten im Wohnviertel – hierher verirrt sich kaum ein Tourist. Leider nur unter der Woche, perfekt für einen Freitagabend.',
+    order: 'Was die Tafel gerade hergibt' },
+  { id: 'meixner', cat: 'local', group: 'graetzl', kind: 'Wirtshaus', name: 'Meixner’s Gastwirtschaft', sub: 'Wirtshaus im 10. Bezirk, Favoriten',
+    lat: 48.17466, lng: 16.38023, tel: '+4316042710', open: [1, 2, 3, 4, 5, 6],
+    zeiten: 'Mo–Sa 11.30–22 Uhr, So Ruhetag',
+    text: 'Gepflegte Wiener Küche in einem Favoritner Eckwirtshaus, rund 15 Minuten zu Fuss vom Hauptbahnhof. Ideal, wenn ihr hungrig ankommt.',
+    order: 'Wiener Küche, sauber gekocht' },
+  { id: 'kierlinger', cat: 'local', group: 'extra', kind: 'Heuriger', name: 'Heuriger Kierlinger', sub: 'Heuriger im 19. Bezirk, Nussdorf',
+    lat: 48.25845, lng: 16.36252, tel: '+4313702264', open: [0, 1, 2, 3, 4, 5, 6],
+    season: { from: '2026-10-24', to: '2026-12-06' },
+    zeiten: 'Ausg’steckt 24.10.–6.12.2026: Mo–Sa 15.30–24, So 15.30–23 Uhr',
+    text: 'Ein echter Wiener Heuriger am Rand der Weinberge: eigener Wein, Buffet und Holztische. Hin geht’s mit der Tram D bis «Beethovengang» – dieselbe Linie, die euch vom Hauptbahnhof zum Hotel bringt.',
+    order: 'Ein Achterl Grüner Veltliner oder Wiener Gemischter Satz, dazu vom Buffet' },
+  { id: 'leo', cat: 'local', group: 'extra', kind: 'Würstelstand', name: 'Würstelstand Leo', sub: 'Würstelstand am Döblinger Gürtel',
+    lat: 48.23192, lng: 16.35433, open: [0, 1, 2, 3, 4, 5, 6],
+    zeiten: 'Mo–Do 10.30–4, Fr/Sa 10.30–5.30, So 11–23 Uhr',
+    text: 'Der älteste Würstelstand Wiens, seit 1928. Um zwei Uhr früh steht man hier neben Taxlern und Nachtschwärmern – Wien pur.',
+    order: 'Eine Käsekrainer – oder die «Big Mama» für bis zu vier Personen' }
+];
+const LOCAL_GROUPS = [
+  { id: 'near', title: 'In Hotelnähe und in der City' },
+  { id: 'graetzl', title: 'Draussen in den Grätzln' },
+  { id: 'extra', title: 'Heuriger und Würstelstand' }
+];
+const WEEKDAY_SHORT = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+const WEEKDAY_LONG = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+
+const CATS = [
+  { id: 'sight', label: 'Sehenswertes' },
+  { id: 'food', label: 'Kulinarik' },
+  { id: 'cafe', label: 'Kaffee & Süsses' },
+  { id: 'local', label: 'Beisln & Heurige' },
+  { id: 'base', label: 'Hotel & Bahnhof' }
+];
+
+const VIENNA = { lat: 48.2082, lng: 16.3738 };
+const DETOUR = 1.3;          // Faktor Luftlinie -> echter Fussweg
+const WALK_KMH = 4.8;
+const WALK_LIMIT_KM = 2.0;   // darüber empfehlen wir die Öffis
+const NEAR_VIENNA_KM = 40;
+const WEATHER_URL = 'https://api.open-meteo.com/v1/forecast?latitude=48.2082&longitude=16.3738'
+  + '&current=temperature_2m,weather_code,is_day'
+  + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunset'
+  + '&timezone=Europe%2FVienna&forecast_days=16';
+// basemap.at (offizielle Grundkarte Österreichs): ohne API-Key, funktioniert auch aus einer lokalen Datei.
+const TILES = {
+  map: { url: 'https://mapsneu.wien.gv.at/basemap/bmapgrau/normal/google3857/{z}/{y}/{x}.png', maxNativeZoom: 19 },
+  photo: { url: 'https://mapsneu.wien.gv.at/basemap/bmaporthofoto30cm/normal/google3857/{z}/{y}/{x}.jpeg', maxNativeZoom: 19 }
+};
+const ATTRIBUTION = 'Karte: <a href="https://www.basemap.at" target="_blank" rel="noopener">basemap.at</a> (CC BY 4.0)';
+
+const ALL = new Map([...BASE, ...PLACES.filter(p => !p.group), ...CAFES, ...LOCALS].map(p => [p.id, p]));
+
+/* =====================================================================
+   Helfer
+   ===================================================================== */
+
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+const isMobile = matchMedia('(max-width: 860px)');
+const scrollBehavior = () => (reduceMotion.matches ? 'auto' : 'smooth');
+
+// Speicher ist reine Komfortfunktion: Ist er blockiert (privates Fenster), läuft die Seite ohne weiter.
+const store = {
+  get(key, fallback) {
+    try { const v = localStorage.getItem('wien:' + key); return v === null ? fallback : JSON.parse(v); }
+    catch (e) { return fallback; }
+  },
+  set(key, value) {
+    try { localStorage.setItem('wien:' + key, JSON.stringify(value)); } catch (e) { /* nicht verfügbar */ }
+  },
+  remove(key) {
+    try { localStorage.removeItem('wien:' + key); } catch (e) { /* nicht verfügbar */ }
+  }
+};
+
+const ICONS = {
+  walk: '<circle cx="13" cy="4.5" r="1.7"/><path d="M10.5 21l1.8-6 2.7 2.5V21M8.5 12.5 10 8.2l3.6.8 2 3.4 2.4 1M10 8.2 7.4 9.8 6.5 13"/>',
+  clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  ticket: '<path d="M4 7h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4V7z"/><path d="M14.5 7.5v1.5M14.5 11.25v1.5M14.5 15v1.5"/>',
+  tram: '<rect x="6" y="6" width="12" height="12" rx="2.5"/><path d="M6 12.5h12M9.5 21l1.2-3M14.5 21l-1.2-3M9 3h6M12 3v3"/>',
+  bed: '<path d="M3 19V6M3 15h18v4M21 15v-2.5A2.5 2.5 0 0 0 18.5 10H11v5"/><circle cx="7" cy="11.5" r="1.8"/>',
+  train: '<rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 10.5h14M8.5 21l2-4M15.5 21l-2-4"/><circle cx="9" cy="13.7" r=".9"/><circle cx="15" cy="13.7" r=".9"/>',
+  cup: '<path d="M4.5 9.5h11v4a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5v-4zM15.5 10.5h1.2a2.4 2.4 0 0 1 0 4.8h-1.5M8 3.5c-.8 1 .8 1.8 0 3M11.5 3.5c-.8 1 .8 1.8 0 3"/>',
+  home: '<path d="M4 11.5 12 4.5l8 7M6.5 10v9.5h11V10"/>',
+  locate: '<circle cx="12" cy="12" r="3.5"/><circle cx="12" cy="12" r="7.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3"/>',
+  expand: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>',
+  moon: '<path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z"/>',
+  calendar: '<rect x="4" y="5.5" width="16" height="15" rx="1"/><path d="M4 10h16M8.5 3v4M15.5 3v4"/>',
+  ext: '<path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6"/>',
+  layers: '<path d="M12 3.5 21 8.5l-9 5-9-5 9-5z"/><path d="M3 12.5l9 5 9-5M3 16.5l9 5 9-5"/>',
+  fork: '<path d="M7 3v6.5a2 2 0 0 0 2 2V21M11 3v6.5a2 2 0 0 1-2 2M9 3v5.5M17 21V3c-2 1.5-3 4-3 7v3.5h3"/>',
+  wine: '<path d="M8 3h8l-.4 5.2a3.6 3.6 0 0 1-7.2 0L8 3zM12 11.8V20M8.5 20.5h7M8.3 6.5h7.4"/>',
+  phone: '<path d="M5 4h3.5l1.5 4-2 1.5a11 11 0 0 0 6.5 6.5l1.5-2 4 1.5V19a1.5 1.5 0 0 1-1.5 1.5A15.5 15.5 0 0 1 3.5 5.5 1.5 1.5 0 0 1 5 4z"/>'
+};
+const icon = name => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
+
+function distKm(a, b) {
+  const R = 6371, rad = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * rad, dLng = (b.lng - a.lng) * rad;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+const walkMinutes = km => Math.max(1, Math.round(km * DETOUR / WALK_KMH * 60));
+const fmtNum = n => n.toFixed(1).replace('.', ',');
+const isWalkable = p => distKm(HOTEL, p) <= WALK_LIMIT_KM;
+
+function fromHotel(p) {
+  if (p.id === 'hotel') return 'Hier schlafen wir.';
+  const km = distKm(HOTEL, p);
+  return km <= WALK_LIMIT_KM ? `${walkMinutes(km)} Min zu Fuss vom Hotel` : `${fmtNum(km)} km vom Hotel`;
+}
+function routeUrl(p) {
+  const mode = p.id === 'hotel' || isWalkable(p) ? 'walking' : 'transit';
+  return `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}&travelmode=${mode}`;
+}
+
+function parseISO(s) { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); }
+function isoOf(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+function startOfToday() { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }
+const isValidISO = v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(parseISO(v).getTime());
+
+/** Aus dem Anreisedatum das zugehörige Wochenende ableiten. */
+function tripDates() {
+  if (!state.tripDate) return null;
+  const arrival = parseISO(state.tripDate);
+  const dow = arrival.getDay();
+  // Bei Ankunft am Sonntag gilt das folgende Wochenende, damit die Reihenfolge stimmt.
+  const sa = dow === 6 ? arrival : dow === 0 ? addDays(arrival, 6) : addDays(arrival, 6 - dow);
+  return { ankunft: arrival, sa, so: addDays(sa, 1) };
+}
+
+function wx(code, isDay = 1) {
+  if (code === 0) return isDay ? ['☀️', 'sonnig'] : ['🌙', 'klar'];
+  if (code <= 2) return isDay ? ['🌤️', 'leicht bewölkt'] : ['🌙', 'leicht bewölkt'];
+  if (code === 3) return ['☁️', 'bewölkt'];
+  if (code === 45 || code === 48) return ['🌫️', 'Nebel'];
+  if (code >= 51 && code <= 57) return ['🌦️', 'Nieselregen'];
+  if (code >= 61 && code <= 67) return ['🌧️', 'Regen'];
+  if (code >= 71 && code <= 77) return ['🌨️', 'Schnee'];
+  if (code >= 80 && code <= 82) return ['🌦️', 'Regenschauer'];
+  if (code >= 85 && code <= 86) return ['🌨️', 'Schneeschauer'];
+  if (code >= 95) return ['⛈️', 'Gewitter'];
+  return ['🌡️', 'Wetter'];
+}
+
+/* =====================================================================
+   Zustand
+   ===================================================================== */
+
+const asArray = v => (Array.isArray(v) ? v : []);
+const placeIds = new Set(PLACES.map(p => p.id));
+const sweetIds = new Set(SWEETS.map(s => s.id));
+const storedDate = store.get('tripDate', null);
+const storedDay = store.get('day', 'sa');
+
+const state = {
+  done: new Set(asArray(store.get('done', [])).filter(id => placeIds.has(id))),
+  bingo: new Set(asArray(store.get('bingo', [])).filter(id => sweetIds.has(id))),
+  // Zusätzlich prüfen, dass das Datum real existiert (kein 31. Februar aus kaputtem Speicher).
+  tripDate: isValidISO(storedDate) && isoOf(parseISO(storedDate)) === storedDate ? storedDate : null,
+  day: DAYS.some(d => d.id === storedDay) ? storedDay : 'sa',
+  tab: 'orte',
+  basemap: store.get('basemap', 'map') === 'photo' ? 'photo' : 'map',
+  viewTouched: false,
+  dim: new Set(),
+  weather: null,
+  filters: { sight: true, food: true, cafe: true, local: true, base: true }
+};
+
+/* =====================================================================
+   Karte
+   ===================================================================== */
+
+const hasLeaflet = typeof window.L !== 'undefined';
+const markers = new Map();
+const catLayers = {};
+let map = null, tiles = null, routeLayer = null, meLayer = null;
+let focusToken = 0; // jede neue Kartenbewegung macht ältere «Popup öffnen»-Aufträge ungültig
+
+function currentTheme() {
+  const set = document.documentElement.dataset.theme;
+  if (set === 'dark' || set === 'light') return set;
+  return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+const isRound = p => p.cat === 'cafe' || p.cat === 'local';
+const roundIcon = p => (p.cat === 'cafe' ? 'cup' : p.kind === 'Heuriger' ? 'wine' : 'fork');
+
+function makeIcon(p) {
+  const extra = (state.dim.has(p.id) ? ' is-dim' : '') + (state.done.has(p.id) ? ' is-done' : '');
+  if (isRound(p)) {
+    return L.divIcon({ className: 'pin-wrap', html: `<div class="pin pin--round cat-${p.cat}${extra}">${icon(roundIcon(p))}</div>`,
+      iconSize: [28, 28], iconAnchor: [14, 14], popupAnchor: [0, -14] });
+  }
+  if (p.cat === 'base') {
+    return L.divIcon({ className: 'pin-wrap', html: `<div class="pin pin--base pin--tail cat-base${extra}">${icon(p.icon)}</div>`,
+      iconSize: [40, 52], iconAnchor: [20, 51], popupAnchor: [0, -50] });
+  }
+  return L.divIcon({ className: 'pin-wrap', html: `<div class="pin pin--tail cat-${p.cat}${extra}">${p.n}</div>`,
+    iconSize: [34, 46], iconAnchor: [17, 45], popupAnchor: [0, -44] });
+}
+
+function tileFor(p) {
+  if (isRound(p)) return `<span class="tile tile--round tile--icon cat-${p.cat}">${icon(roundIcon(p))}</span>`;
+  if (p.cat === 'base') return `<span class="tile tile--icon cat-base">${icon(p.icon)}</span>`;
+  return `<span class="tile cat-${p.cat}">${p.n}</span>`;
+}
+
+function popupHtml(p) {
+  const sub = p.sub || p.sig || '';
+  const distIcon = p.id === 'hotel' ? 'bed' : isWalkable(p) ? 'walk' : 'tram';
+  return `<div class="pop">
+    <div class="pop__head">${tileFor(p)}<div><h3>${esc(p.name)}</h3>${sub ? `<p class="pop__sub">${esc(sub)}</p>` : ''}</div></div>
+    <p class="pop__dist">${icon(distIcon)}${esc(fromHotel(p))}</p>
+    ${p.zeiten ? `<p class="pop__dist pop__hours">${icon('clock')}${esc(p.zeiten)}</p>` : ''}
+    <div class="pop__actions">
+      <button type="button" class="btn btn--sm" data-details="${p.id}">Details</button>
+      <a class="btn btn--sm btn--ghost" href="${routeUrl(p)}" target="_blank" rel="noopener">Route planen${icon('ext')}</a>
+    </div>
+  </div>`;
+}
+
+function initMap() {
+  const el = $('#map');
+  if (!hasLeaflet) {
+    el.innerHTML = '<div class="map-error"><p><strong>Die Karte konnte nicht geladen werden.</strong></p><p>Sie braucht eine Internetverbindung. Prüft das WLAN und ladet die Seite neu.</p></div>';
+    $$('.map-tools, .map-filters').forEach(n => { n.hidden = true; });
+    return;
+  }
+  map = L.map(el, { zoomControl: false, maxZoom: 20 });
+  L.control.zoom({ position: 'bottomright', zoomInTitle: 'Hineinzoomen', zoomOutTitle: 'Herauszoomen' }).addTo(map);
+  setBasemap(state.basemap);
+  CATS.forEach(c => { catLayers[c.id] = L.layerGroup().addTo(map); });
+
+  for (const p of ALL.values()) {
+    const m = L.marker([p.lat, p.lng], {
+      icon: makeIcon(p), title: p.name, riseOnHover: true,
+      zIndexOffset: p.id === 'hotel' ? 400 : p.cat === 'cafe' ? 0 : 200
+    });
+    m.bindPopup(() => popupHtml(p), {
+      className: 'wien-popup', maxWidth: 290, minWidth: 230,
+      autoPanPaddingTopLeft: [20, 80], autoPanPaddingBottomRight: [20, 20]
+    });
+    m.addTo(catLayers[p.cat]);
+    markers.set(p.id, m);
+  }
+  routeLayer = L.layerGroup().addTo(map);
+  meLayer = L.layerGroup().addTo(map);
+  fitCore(false);
+
+  // Solange niemand die Karte bewegt hat, passt sie sich an neue Fenstergrössen an.
+  const touched = () => { state.viewTouched = true; };
+  map.on('dragstart', touched);
+  el.addEventListener('wheel', touched, { passive: true });
+  el.addEventListener('touchstart', touched, { passive: true });
+  el.addEventListener('keydown', touched);
+  $('.leaflet-control-zoom').addEventListener('click', touched);
+  let resizeTimer = 0;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => { if (!state.viewTouched && state.tab !== 'plan') fitCore(false); }, 200);
+  });
+}
+
+function setBasemap(kind) {
+  state.basemap = kind === 'photo' ? 'photo' : 'map';
+  store.set('basemap', state.basemap);
+  const cfg = TILES[state.basemap];
+  if (tiles) map.removeLayer(tiles);
+  tiles = L.tileLayer(cfg.url, { attribution: ATTRIBUTION, maxNativeZoom: cfg.maxNativeZoom, maxZoom: 20 }).addTo(map);
+  $('#map').classList.toggle('is-photo', state.basemap === 'photo');
+  const btn = $('#toolLayer');
+  btn.title = state.basemap === 'photo' ? 'Karte zeigen' : 'Luftbild zeigen';
+  btn.setAttribute('aria-pressed', String(state.basemap === 'photo'));
+}
+
+function fitPlaces(places, animate = true) {
+  if (!map || !places.length) return;
+  focusToken++;
+  const bounds = L.latLngBounds(places.map(p => [p.lat, p.lng]));
+  map.fitBounds(bounds, { paddingTopLeft: [30, 80], paddingBottomRight: [60, 30], maxZoom: 16, animate: animate && !reduceMotion.matches });
+}
+// Startansicht ohne Beisln – die liegen teils weit draussen in den Bezirken.
+function fitCore(animate = true) { fitPlaces([...ALL.values()].filter(p => p.cat !== 'local'), animate); }
+function fitAll(animate = true) { fitPlaces([...ALL.values()].filter(p => state.filters[p.cat]), animate); }
+
+function showLocalsOnMap() {
+  if (!map) return;
+  if (!state.filters.local) { state.filters.local = true; applyFilters(); }
+  fitPlaces([...LOCALS, HOTEL]);
+}
+
+function refreshIcons() {
+  markers.forEach((m, id) => m.setIcon(makeIcon(ALL.get(id))));
+}
+
+function applyFilters() {
+  if (!map) return;
+  CATS.forEach(c => {
+    const layer = catLayers[c.id];
+    if (state.filters[c.id] && !map.hasLayer(layer)) layer.addTo(map);
+    if (!state.filters[c.id] && map.hasLayer(layer)) map.removeLayer(layer);
+  });
+  $$('.fchip').forEach(b => b.setAttribute('aria-pressed', String(state.filters[b.dataset.filter])));
+}
+
+function focusPlace(id) {
+  const m = markers.get(id), p = ALL.get(id);
+  if (!m || !p) return;
+  state.viewTouched = true;
+  if (!state.filters[p.cat]) { state.filters[p.cat] = true; applyFilters(); }
+  if (isMobile.matches) $('.map-wrap').scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
+  const target = [p.lat, p.lng];
+  const zoom = Math.max(map.getZoom(), 16);
+  const my = ++focusToken;
+  let opened = false;
+  const open = () => { if (!opened && my === focusToken) { opened = true; m.openPopup(); } };
+  map.once('moveend', open);
+  setTimeout(open, reduceMotion.matches ? 60 : 1500);
+  if (reduceMotion.matches) map.setView(target, zoom, { animate: false });
+  else map.flyTo(target, zoom, { duration: 1.1 });
+}
+
+function stepAnchor(p) {
+  if (isRound(p)) return [-12, 28];
+  if (p.cat === 'base') return [-18, 56];
+  return [-16, 48];
+}
+
+function showDayOnMap(day, fit) {
+  if (!map) return;
+  focusToken++;
+  routeLayer.clearLayers();
+  const stops = day.stops.map(s => ALL.get(s.ref));
+  const alts = day.stops.filter(s => s.alt).map(s => ALL.get(s.alt.ref));
+  const ids = new Set([...stops, ...alts].map(p => p.id));
+  state.dim = new Set([...ALL.keys()].filter(id => !ids.has(id)));
+  [...stops, ...alts].forEach(p => { state.filters[p.cat] = true; });
+  applyFilters();
+  refreshIcons();
+
+  for (let i = 1; i < stops.length; i++) {
+    const a = stops[i - 1], b = stops[i];
+    const kind = distKm(a, b) > WALK_LIMIT_KM ? 'ride' : 'walk';
+    const ll = [[a.lat, a.lng], [b.lat, b.lng]];
+    L.polyline(ll, { className: 'route-casing', weight: 10, interactive: false }).addTo(routeLayer);
+    L.polyline(ll, { className: `route route--${kind} day--${day.id}`, weight: 6, interactive: false }).addTo(routeLayer);
+  }
+  // Etiketten abwechselnd rechts/links vom Pin, damit sich nahe Stopps nicht überdecken.
+  day.stops.forEach((s, i) => {
+    const p = ALL.get(s.ref);
+    const [ax, ay] = stepAnchor(p);
+    const side = i % 2 ? ' step--left' : '';
+    L.marker([p.lat, p.lng], {
+      icon: L.divIcon({ className: 'step-wrap', html: `<span class="step day--${day.id}${side}" style="--gap:${-ax * 2}px">${esc(s.t)}</span>`, iconSize: null, iconAnchor: [ax, ay] }),
+      interactive: false, keyboard: false, zIndexOffset: 2000
+    }).addTo(routeLayer);
+  });
+
+  if (fit) {
+    const bounds = L.latLngBounds(stops.map(p => [p.lat, p.lng]));
+    const opts = { paddingTopLeft: [60, 90], paddingBottomRight: [70, 40], maxZoom: 16 };
+    if (reduceMotion.matches) map.fitBounds(bounds, { ...opts, animate: false });
+    else map.flyToBounds(bounds, { ...opts, duration: 1 });
+  }
+}
+
+function clearDayOnMap() {
+  if (!map) return;
+  routeLayer.clearLayers();
+  if (state.dim.size) { state.dim.clear(); refreshIcons(); }
+}
+
+function locateMe() {
+  if (!navigator.geolocation) { toast('Dieser Browser kann den Standort nicht bestimmen.'); return; }
+  toast('Standort wird gesucht …');
+  navigator.geolocation.getCurrentPosition(pos => {
+    const here = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    const km = distKm(here, VIENNA);
+    if (km > NEAR_VIENNA_KM) {
+      toast(`Ihr seid noch ${Math.round(km).toLocaleString('de-CH')} km von Wien entfernt. Die Melange wartet!`);
+      return;
+    }
+    if (!map) return;
+    state.viewTouched = true;
+    focusToken++;
+    meLayer.clearLayers();
+    L.circle([here.lat, here.lng], { radius: pos.coords.accuracy, color: '#1D6FD8', weight: 1, fillOpacity: .12, interactive: false }).addTo(meLayer);
+    L.circleMarker([here.lat, here.lng], { radius: 8, color: '#fff', weight: 3, fillColor: '#1D6FD8', fillOpacity: 1 })
+      .bindTooltip('Hier seid ihr').addTo(meLayer);
+    map.flyTo([here.lat, here.lng], 16, { animate: !reduceMotion.matches });
+    toast(`Gefunden! Zum Hotel sind es ${walkMinutes(distKm(here, HOTEL))} Minuten zu Fuss.`);
+  }, err => {
+    toast(err.code === 1
+      ? 'Standort nicht freigegeben. Erlaubt den Zugriff in den Browser-Einstellungen.'
+      : 'Standort konnte nicht bestimmt werden. Versucht es draussen noch einmal.');
+  }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+}
+
+/* =====================================================================
+   Panel: Orte
+   ===================================================================== */
+
+function renderBase() {
+  $('#base').innerHTML = `<div class="base">${BASE.map(p => `
+    <article class="base__item" id="place-${p.id}">
+      ${tileFor(p)}
+      <div>
+        <h3 class="base__name">${esc(p.name)}</h3>
+        <p class="base__text">${esc(p.text)}</p>
+        <div class="actions">
+          <button type="button" class="btn btn--sm" data-focus="${p.id}">Auf der Karte</button>
+          <a class="btn btn--sm btn--ghost" href="${routeUrl(p)}" target="_blank" rel="noopener">Route planen${icon('ext')}</a>
+        </div>
+      </div>
+    </article>`).join('')}</div>`;
+}
+
+function placeHtml(p) {
+  const facts = [];
+  if (!p.group) facts.push(`<li>${icon(isWalkable(p) ? 'walk' : 'tram')}${esc(fromHotel(p))}</li>`);
+  if (p.dauer) facts.push(`<li>${icon('clock')}${esc(p.dauer)}</li>`);
+  if (p.preis) facts.push(`<li>${icon('ticket')}${esc(p.preis)}</li>`);
+  const tips = p.tips ? `<details class="tips"><summary>Insider-Tipps</summary><ul class="list">${p.tips.map(t => `<li>${esc(t)}</li>`).join('')}</ul></details>` : '';
+  const transit = p.transit ? `<p class="transit">${icon(/zu Fuss/.test(p.transit) ? 'walk' : 'tram')}<span>${esc(p.transit)}</span></p>` : '';
+  const cafes = p.group ? `<ul class="chips">${CAFES.map(c => `<li><button type="button" data-focus="${c.id}"><span class="dot" aria-hidden="true"></span>${esc(c.name)}</button></li>`).join('')}</ul>` : '';
+  const primary = p.group
+    ? `<button type="button" class="btn btn--sm" data-go="bingo">Zum Süss-Bingo</button><button type="button" class="btn btn--sm btn--ghost" data-go="kaffee">Kaffee-Guide</button>`
+    : `<button type="button" class="btn btn--sm" data-focus="${p.id}">Auf der Karte</button><a class="btn btn--sm btn--ghost" href="${routeUrl(p)}" target="_blank" rel="noopener">Route planen${icon('ext')}</a>`;
+  return `<article class="place" id="place-${p.id}">
+    <span class="tile cat-${p.cat}${p.cat === 'cafe' ? ' tile--round' : ''}">${p.n}</span>
+    <div>
+      <h3 class="place__title">${esc(p.name)}</h3>
+      <p class="place__sub">${esc(p.sub)}</p>
+      <p class="place__text">${esc(p.text)}</p>
+      ${cafes}
+      ${facts.length ? `<ul class="facts">${facts.join('')}</ul>` : ''}
+      ${transit}
+      ${tips}
+      <div class="actions">
+        ${primary}
+        <label class="done"><input type="checkbox" data-done="${p.id}"${state.done.has(p.id) ? ' checked' : ''}><span>Erlebt</span></label>
+      </div>
+    </div>
+  </article>`;
+}
+
+function renderPlaces() { $('#places').innerHTML = PLACES.map(placeHtml).join(''); }
+
+function renderProgress() {
+  const n = PLACES.filter(p => state.done.has(p.id)).length;
+  const label = n === PLACES.length ? 'Alles erlebt. Bravo!' : `${n} von ${PLACES.length} erlebt`;
+  $('#progress').innerHTML = `<span class="squares" aria-hidden="true">${PLACES.map(p => `<i class="${state.done.has(p.id) ? 'on' : ''}"></i>`).join('')}</span><span>${label}</span>`;
+}
+
+function toggleDone(id, on) {
+  if (on) state.done.add(id); else state.done.delete(id);
+  store.set('done', [...state.done]);
+  renderProgress();
+  const m = markers.get(id);
+  if (m) m.setIcon(makeIcon(ALL.get(id)));
+  if (on && state.done.size === PLACES.length) { toast('Alle acht erlebt! Wien ist stolz auf euch.'); confetti(); }
+}
+
+/* =====================================================================
+   Panel: Plan
+   ===================================================================== */
+
+function forecastFor(date) {
+  const w = state.weather;
+  if (!w || !date) return null;
+  const i = w.daily.time.indexOf(isoOf(date));
+  if (i < 0) return null;
+  return {
+    code: w.daily.weather_code[i], max: w.daily.temperature_2m_max[i], min: w.daily.temperature_2m_min[i],
+    rain: w.daily.precipitation_probability_max[i], sunset: w.daily.sunset[i]
+  };
+}
+const sunsetTime = iso => (typeof iso === 'string' ? iso.slice(11, 16) : '');
+const fmtShort = d => d.toLocaleDateString('de-CH', { weekday: 'short', day: 'numeric', month: 'numeric' });
+
+function daySummary(day) {
+  let walk = 0, rides = 0;
+  for (let i = 1; i < day.stops.length; i++) {
+    const km = distKm(ALL.get(day.stops[i - 1].ref), ALL.get(day.stops[i].ref));
+    if (km > WALK_LIMIT_KM) rides++; else walk += km * DETOUR;
+  }
+  const parts = [`<span>${icon('walk')}ca. ${fmtNum(walk)} km zu Fuss</span>`];
+  if (rides) parts.push(`<span>${icon('tram')}${rides} ${rides === 1 ? 'Öffi-Fahrt' : 'Öffi-Fahrten'}</span>`);
+  return parts;
+}
+
+function sunsetLine(date) {
+  const fc = forecastFor(date);
+  if (fc && fc.sunset) return `Sonnenuntergang an dem Tag: ${sunsetTime(fc.sunset)} Uhr.`;
+  if (state.weather) return `Sonnenuntergang heute: ${sunsetTime(state.weather.daily.sunset[0])} Uhr – plant die Fahrt kurz danach.`;
+  return '';
+}
+
+function timelineHtml(day, date) {
+  const items = [];
+  day.stops.forEach((s, i) => {
+    const p = ALL.get(s.ref);
+    if (i > 0) {
+      const km = distKm(ALL.get(day.stops[i - 1].ref), p);
+      const ride = km > WALK_LIMIT_KM;
+      items.push(`<li class="leg${ride ? ' leg--ride' : ''}"><span>${icon(ride ? 'tram' : 'walk')}${ride ? 'mit den Öffis' : `${walkMinutes(km)} Min zu Fuss`}</span></li>`);
+    }
+    const extra = s.sunset ? sunsetLine(date) : '';
+    const altPlace = s.alt && ALL.get(s.alt.ref);
+    const alt = altPlace
+      ? `<p class="stop__alt">${icon('fork')}<span>${esc(s.alt.before)} <button type="button" class="linklike" data-focus="${altPlace.id}">${esc(altPlace.name)}</button> ${esc(s.alt.after)}</span></p>`
+      : '';
+    items.push(`<li class="stop">
+      <span class="stop__time">${esc(s.t)}</span>
+      <span class="stop__node" aria-hidden="true"></span>
+      <div class="stop__body">
+        <button type="button" class="stop__place" data-focus="${p.id}">${esc(p.name)}</button>
+        <p>${esc(s.note)}</p>
+        ${extra ? `<p class="stop__extra">${esc(extra)}</p>` : ''}
+        ${alt}
+      </div>
+    </li>`);
+  });
+  return `<ol class="timeline">${items.join('')}</ol>`;
+}
+
+function renderPlan() {
+  const dates = tripDates();
+  const hadFocus = $('#dayButtons').contains(document.activeElement);
+  $('#dayButtons').innerHTML = DAYS.map(d => `
+    <button type="button" class="day-btn day--${d.id}" data-day="${d.id}" aria-pressed="${d.id === state.day}">
+      ${d.label}<small>${dates ? fmtShort(dates[d.id]) : d.hint}</small>
+    </button>`).join('');
+  if (hadFocus) $(`[data-day="${state.day}"]`).focus();
+
+  const day = DAYS.find(d => d.id === state.day);
+  const date = dates && dates[day.id];
+  const fc = forecastFor(date);
+  const meta = daySummary(day);
+  if (fc) meta.push(`<span><span aria-hidden="true">${wx(fc.code)[0]}</span>${Math.round(fc.max)}° / ${Math.round(fc.min)}°, Regen ${fc.rain ?? '–'} %</span>`);
+  $('#dayView').className = `day-view day--${day.id}`;
+  $('#dayView').innerHTML = `<h2 class="h2">${esc(day.title)}</h2><p class="day-meta">${meta.join('')}</p>${timelineHtml(day, date)}`;
+
+  renderWeatherStrip(dates);
+}
+
+function renderWeatherStrip(dates) {
+  const w = state.weather;
+  const strip = $('#weatherStrip');
+  if (!w) return;
+  const tripDays = dates
+    ? [['Ankunft', dates.ankunft], ['Samstag', dates.sa], ['Sonntag', dates.so]]
+        .filter(([, d], i, arr) => i === 0 || isoOf(d) !== isoOf(arr[0][1]))
+        .map(([name, d]) => ({ name, date: d, fc: forecastFor(d) }))
+    : [];
+  const today = startOfToday();
+  // Während der Reise fehlt der Ankunftstag in der Prognose – dann zeigen wir die übrigen Reisetage.
+  const avail = tripDays.filter(t => t.fc);
+  const hasTrip = Boolean(dates) && today <= dates.so && avail.length > 0;
+  const days = hasTrip ? avail : [0, 1, 2, 3].map(n => {
+    const d = addDays(today, n);
+    return { name: n === 0 ? 'Heute' : n === 1 ? 'Morgen' : d.toLocaleDateString('de-CH', { weekday: 'long' }), date: d, fc: forecastFor(d) };
+  }).filter(t => t.fc);
+
+  $('#wx-h').textContent = hasTrip ? 'Wetter für euer Wochenende' : 'Wetter in Wien, die nächsten Tage';
+  const cells = days.map(t => {
+    const [emo, label] = wx(t.fc.code);
+    return `<div class="wx__day">
+      <div class="wx__name">${esc(t.name)}</div>
+      <div class="wx__date">${t.date.toLocaleDateString('de-CH', { day: 'numeric', month: 'numeric' })}</div>
+      <div class="wx__emo" role="img" aria-label="${esc(label)}">${emo}</div>
+      <div class="wx__temp">${Math.round(t.fc.max)}° / ${Math.round(t.fc.min)}°</div>
+      <div class="wx__rain">Regen ${t.fc.rain ?? '–'} %</div>
+    </div>`;
+  }).join('');
+  let note = '';
+  if (dates && !hasTrip && dates.ankunft > today) note = '<p class="wx-note">Für euer Wochenende gibt’s die Prognose etwa zwei Wochen vorher.</p>';
+  strip.innerHTML = `<div class="wx">${cells}</div>${note}`;
+
+  const wet = hasTrip && avail.some(t => (t.fc.rain ?? 0) >= 60);
+  $('#rainPlan').classList.toggle('is-alert', wet);
+  $('#rainAlert').hidden = !wet;
+  if (wet) $('#rainPlan').open = true;
+}
+
+function selectDay(id) {
+  state.day = id;
+  store.set('day', id);
+  renderPlan();
+  showDayOnMap(DAYS.find(d => d.id === id), true);
+}
+
+function pickInitialDay() {
+  const d = tripDates();
+  if (!d) return;
+  const t = isoOf(new Date());
+  if (t === isoOf(d.so)) state.day = 'so';
+  else if (t === isoOf(d.sa)) state.day = 'sa';
+  else if (t === isoOf(d.ankunft)) state.day = 'ankunft';
+}
+
+/* =====================================================================
+   Panel: Beisln
+   ===================================================================== */
+
+/** Die Tage, an denen ihr in Wien seid – ohne Reisedatum ein typisches Fr/Sa/So. */
+function weekendDays() {
+  const d = tripDates();
+  if (!d) return [5, 6, 0].map(dow => ({ dow, date: null }));
+  const seen = new Set();
+  return [d.ankunft, d.sa, d.so].filter(date => {
+    const key = isoOf(date);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).map(date => ({ dow: date.getDay(), date }));
+}
+
+function isOpenOn(l, day) {
+  if (!l.open.includes(day.dow)) return false;
+  if (!l.season || !day.date) return true;
+  const iso = isoOf(day.date);
+  return iso >= l.season.from && iso <= l.season.to;
+}
+
+function openDaysHtml(l) {
+  const days = weekendDays();
+  const label = days.map(d => `${WEEKDAY_LONG[d.dow]} ${isOpenOn(l, d) ? 'offen' : 'geschlossen'}`).join(', ');
+  return `<span class="open-days" role="img" aria-label="${esc(label)}">${days.map(d =>
+    `<i class="${isOpenOn(l, d) ? 'on' : 'off'}" aria-hidden="true">${WEEKDAY_SHORT[d.dow]}</i>`).join('')}</span>`;
+}
+
+function localHtml(l) {
+  const call = l.tel ? `<a class="btn btn--sm btn--ghost" href="tel:${l.tel}">${icon('phone')}Reservieren</a>` : '';
+  return `<article class="local" id="local-${l.id}">
+    ${tileFor(l)}
+    <div>
+      <h3 class="place__title">${esc(l.name)}</h3>
+      <p class="place__sub">${esc(l.sub)}</p>
+      <p class="place__text">${esc(l.text)}</p>
+      <p class="local__order"><strong>Bestellen:</strong> ${esc(l.order)}</p>
+      ${l.tip ? `<p class="local__order"><strong>Tipp:</strong> ${esc(l.tip)}</p>` : ''}
+      <div class="local__hours">${openDaysHtml(l)}<span>${esc(l.zeiten)}</span></div>
+      <ul class="facts"><li>${icon(isWalkable(l) ? 'walk' : 'tram')}${esc(fromHotel(l))}</li></ul>
+      <div class="actions">
+        <button type="button" class="btn btn--sm" data-focus="${l.id}">Auf der Karte</button>
+        <a class="btn btn--sm btn--ghost" href="${routeUrl(l)}" target="_blank" rel="noopener">Route planen${icon('ext')}</a>
+        ${call}
+      </div>
+    </div>
+  </article>`;
+}
+
+function renderLocals() {
+  const d = tripDates();
+  $('#localsHint').textContent = d
+    ? 'Die Kästchen zeigen, ob das Lokal an euren Tagen offen hat.'
+    : 'Die Kästchen zeigen Freitag bis Sonntag. Mit eurem Reisedatum (oben) werden es eure echten Tage.';
+  $('#locals').innerHTML = LOCAL_GROUPS.map(g => `
+    <h3 class="local__group">${esc(g.title)}</h3>
+    ${LOCALS.filter(l => l.group === g.id).map(localHtml).join('')}`).join('');
+}
+
+/* =====================================================================
+   Panel: Kaffee, Bingo, Wienerisch
+   ===================================================================== */
+
+function renderCafes() {
+  $('#cafes').innerHTML = `<ul class="cafes">${CAFES.map(c => `
+    <li class="cafe" id="cafe-${c.id}">
+      ${tileFor(c)}
+      <div>
+        <h3 class="cafe__name"><button type="button" class="linklike" data-focus="${c.id}">${esc(c.name)}</button></h3>
+        <p class="cafe__sig">${esc(c.sig)}</p>
+        <p class="cafe__text">${esc(c.text)}</p>
+        <p class="cafe__dist">${icon(isWalkable(c) ? 'walk' : 'tram')}${esc(fromHotel(c))}</p>
+      </div>
+    </li>`).join('')}</ul>`;
+}
+
+function renderCoffees() {
+  $('#coffees').innerHTML = COFFEES.map(c => `
+    <figure class="coffee">
+      <div class="cup-box" aria-hidden="true">
+        <div class="cup${c.cup ? ' cup--' + c.cup : ''}"><div class="cup__fill">${c.layers.map(([k, h]) => `<b class="l-${k}" style="height:${h}%"></b>`).join('')}</div></div>
+      </div>
+      <figcaption><strong>${esc(c.name)}</strong><span>${esc(c.desc)}</span></figcaption>
+    </figure>`).join('');
+}
+
+function bingoLines() {
+  return BINGO_LINES.filter(line => line.every(i => state.bingo.has(SWEETS[i].id)));
+}
+
+function renderBingo() {
+  $('#bingoGrid').innerHTML = SWEETS.map(s => `
+    <button type="button" class="cell" data-sweet="${s.id}" aria-pressed="${state.bingo.has(s.id)}">
+      <strong>${esc(s.name)}</strong><span>${esc(s.where)}</span>
+    </button>`).join('');
+  updateBingoState();
+}
+
+function updateBingoState() {
+  const lines = bingoLines();
+  const inLine = new Set(lines.flat());
+  $$('.cell').forEach((cell, i) => {
+    cell.setAttribute('aria-pressed', String(state.bingo.has(SWEETS[i].id)));
+    cell.classList.toggle('is-line', inLine.has(i));
+  });
+  const n = state.bingo.size;
+  let txt = n === 0 ? 'Noch nichts probiert. Auf geht’s!' : `${n} von ${SWEETS.length} probiert`;
+  if (lines.length) txt += `, ${lines.length} ${lines.length === 1 ? 'Bingo' : 'Bingos'}`;
+  $('#bingoStatus').textContent = txt;
+}
+
+function toggleSweet(id) {
+  const before = bingoLines().length;
+  if (state.bingo.has(id)) state.bingo.delete(id); else state.bingo.add(id);
+  store.set('bingo', [...state.bingo]);
+  updateBingoState();
+  const after = bingoLines().length;
+  if (state.bingo.size === SWEETS.length && after > before) {
+    toast('Alle neun geschafft! Ihr seid offiziell Süss-Kaiser von Wien.');
+    confetti();
+  } else if (after > before) {
+    toast(after === 1 ? 'Bingo! Die erste Reihe ist voll.' : `Bingo Nummer ${after}!`);
+    confetti();
+  }
+}
+
+function renderWords() {
+  $('#words').innerHTML = WORDS.map(([w, de, ch], i) => `
+    <button type="button" class="word" data-word="${i}" aria-pressed="false">
+      <span class="word__face word__front"><strong>${esc(w)}</strong></span>
+      <span class="word__face word__back"><span class="de">${esc(de)}</span><span class="ch">${esc(ch)}</span></span>
+    </button>`).join('');
+}
+
+/* =====================================================================
+   Kopf: Countdown, Wetter, Farbmodus
+   ===================================================================== */
+
+function renderCountdown() {
+  const el = $('#countdownText');
+  const d = tripDates();
+  if (!d) { el.textContent = 'Reisedatum wählen'; return; }
+  const today = startOfToday();
+  const days = Math.round((d.ankunft - today) / 864e5);
+  if (days > 1) el.textContent = `Noch ${days} Tage`;
+  else if (days === 1) el.textContent = 'Morgen geht’s los';
+  else if (days === 0) el.textContent = 'Heute geht’s los';
+  else if (today <= d.so) el.textContent = 'Servus aus Wien';
+  else el.textContent = 'Wie war’s?';
+}
+
+function setTripDate(value) {
+  state.tripDate = isValidISO(value) ? value : null;
+  if (state.tripDate) store.set('tripDate', state.tripDate); else store.remove('tripDate');
+  $('#tripDate').value = state.tripDate || '';
+  renderCountdown();
+  renderPlan();
+  renderLocals();
+}
+
+async function loadWeather() {
+  const chip = $('#weatherNow');
+  try {
+    const res = await fetch(WEATHER_URL);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (!data.current || !data.daily || !Array.isArray(data.daily.time)) throw new Error('Unerwartetes Format');
+    state.weather = data;
+    const [emo, label] = wx(data.current.weather_code, data.current.is_day);
+    chip.innerHTML = `<span aria-hidden="true">${emo}</span>${Math.round(data.current.temperature_2m)}°<span class="wx-where"> in Wien</span>`;
+    chip.title = `Jetzt in Wien: ${label}. Antippen für die Prognose.`;
+    renderPlan();
+  } catch (err) {
+    chip.textContent = 'Wetter offline';
+    chip.title = 'Die Wetterdaten konnten nicht geladen werden. Lädt die Seite später neu.';
+    $('#weatherStrip').innerHTML = '<p class="wx-note">Wetterdaten sind gerade nicht erreichbar. Ladet die Seite später neu.</p>';
+  }
+}
+
+function applyTheme() {
+  const t = currentTheme();
+  $('#map').classList.toggle('is-night', t === 'dark');
+  const btn = $('#themeToggle');
+  btn.innerHTML = icon(t === 'dark' ? 'sun' : 'moon');
+  btn.setAttribute('aria-label', t === 'dark' ? 'Tagmodus einschalten' : 'Nachtmodus einschalten');
+  btn.title = t === 'dark' ? 'Tagmodus' : 'Nachtmodus';
+  $('meta[name="theme-color"]').setAttribute('content', t === 'dark' ? '#000000' : '#F1BE3A');
+}
+
+/* =====================================================================
+   Tabs, Toast, Konfetti
+   ===================================================================== */
+
+function selectTab(name, { focus = false, scroll = false, moveMap = true } = {}) {
+  state.tab = name;
+  $$('.tab').forEach(t => {
+    const on = t.dataset.tab === name;
+    t.setAttribute('aria-selected', String(on));
+    t.tabIndex = on ? 0 : -1;
+    if (on && focus) t.focus();
+  });
+  $$('.tabpanel').forEach(p => { p.hidden = p.dataset.panel !== name; });
+  store.set('tab', name);
+  focusToken++;
+  if (map && moveMap && (name === 'plan' || name === 'beisl')) map.closePopup();
+  if (name === 'plan') showDayOnMap(DAYS.find(d => d.id === state.day), true);
+  else clearDayOnMap();
+  if (name === 'beisl' && moveMap) showLocalsOnMap();
+  if (scroll) {
+    if (isMobile.matches) {
+      const top = $('.panel').getBoundingClientRect().top + window.scrollY;
+      if (window.scrollY > top) window.scrollTo({ top, behavior: scrollBehavior() });
+    } else {
+      $('.panel').scrollTop = 0;
+    }
+  }
+}
+
+function showDetails(id) {
+  const p = ALL.get(id);
+  if (!p) return;
+  const [tab, prefix] = p.cat === 'cafe' ? ['kaffee', 'cafe-'] : p.cat === 'local' ? ['beisl', 'local-'] : ['orte', 'place-'];
+  selectTab(tab, { moveMap: false });
+  if (map) map.closePopup();
+  const target = document.getElementById(prefix + id);
+  if (!target) return;
+  target.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
+  target.classList.remove('is-flash');
+  void target.offsetWidth;
+  target.classList.add('is-flash');
+}
+
+let toastTimer = 0;
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('is-on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('is-on'), 4000);
+}
+
+function confetti() {
+  if (reduceMotion.matches) return;
+  const colors = ['#F1BE3A', '#000', '#9E1B32', '#2F6B5E', '#fff'];
+  const wrap = document.createElement('div');
+  wrap.className = 'confetti';
+  wrap.setAttribute('aria-hidden', 'true');
+  for (let i = 0; i < 48; i++) {
+    const s = document.createElement('i');
+    s.style.setProperty('--x', `${(Math.random() * 2 - 1) * 45}vw`);
+    s.style.setProperty('--y', `${40 + Math.random() * 50}vh`);
+    s.style.setProperty('--r', `${Math.random() * 720 - 360}deg`);
+    s.style.setProperty('--d', `${0.9 + Math.random() * 0.8}s`);
+    s.style.background = colors[i % colors.length];
+    wrap.appendChild(s);
+  }
+  document.body.appendChild(wrap);
+  setTimeout(() => wrap.remove(), 2000);
+}
+
+/* =====================================================================
+   Ereignisse
+   ===================================================================== */
+
+function bindEvents() {
+  document.addEventListener('click', e => {
+    const trip = $('#trip');
+    if (trip.open && !trip.contains(e.target)) trip.open = false;
+
+    const t = e.target;
+    const focusBtn = t.closest('[data-focus]');
+    if (focusBtn) { focusPlace(focusBtn.dataset.focus); return; }
+    const details = t.closest('[data-details]');
+    if (details) { showDetails(details.dataset.details); return; }
+    const go = t.closest('[data-go]');
+    if (go) { selectTab(go.dataset.go, { scroll: true }); return; }
+    const sweet = t.closest('[data-sweet]');
+    if (sweet) { toggleSweet(sweet.dataset.sweet); return; }
+    const word = t.closest('[data-word]');
+    if (word) {
+      const on = !word.classList.contains('is-flipped');
+      word.classList.toggle('is-flipped', on);
+      word.setAttribute('aria-pressed', String(on));
+      return;
+    }
+    const day = t.closest('[data-day]');
+    if (day) { selectDay(day.dataset.day); return; }
+    const filter = t.closest('[data-filter]');
+    if (filter) {
+      const cat = filter.dataset.filter;
+      state.filters[cat] = !state.filters[cat];
+      applyFilters();
+    }
+  });
+
+  document.addEventListener('change', e => {
+    const box = e.target.closest('[data-done]');
+    if (box) toggleDone(box.dataset.done, box.checked);
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && $('#trip').open) { $('#trip').open = false; $('#trip summary').focus(); }
+  });
+
+  $('.tabs').addEventListener('click', e => {
+    const tab = e.target.closest('.tab');
+    if (tab) selectTab(tab.dataset.tab, { scroll: true });
+  });
+  $('.tabs').addEventListener('keydown', e => {
+    const tabs = $$('.tab');
+    const i = tabs.indexOf(document.activeElement);
+    if (i < 0) return;
+    const next = { ArrowRight: (i + 1) % tabs.length, ArrowLeft: (i - 1 + tabs.length) % tabs.length, Home: 0, End: tabs.length - 1 }[e.key];
+    if (next === undefined) return;
+    e.preventDefault();
+    selectTab(tabs[next].dataset.tab, { focus: true });
+  });
+
+  $('#tripDate').addEventListener('change', e => setTripDate(e.target.value));
+  $('#tripClear').addEventListener('click', () => { setTripDate(null); $('#trip').open = false; });
+  $('#weatherNow').addEventListener('click', () => {
+    selectTab('plan', { scroll: true });
+    $('#weatherBlock').scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
+  });
+  $('#themeToggle').addEventListener('click', () => {
+    const next = currentTheme() === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    store.set('theme', next);
+    applyTheme();
+  });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (!store.get('theme', null)) applyTheme();
+  });
+
+  $('#toolHotel').addEventListener('click', () => focusPlace('hotel'));
+  $('#toolLocate').addEventListener('click', locateMe);
+  $('#toolFit').addEventListener('click', () => { if (map) map.closePopup(); fitAll(true); });
+  $('#toolLayer').addEventListener('click', () => { if (map) setBasemap(state.basemap === 'photo' ? 'map' : 'photo'); });
+  $('#bingoReset').addEventListener('click', () => {
+    if (state.bingo.size && !confirm('Alle Häkchen im Süss-Bingo löschen?')) return;
+    state.bingo.clear();
+    store.set('bingo', []);
+    updateBingoState();
+  });
+}
+
+/* =====================================================================
+   Start
+   ===================================================================== */
+
+$$('[data-icon]').forEach(el => el.insertAdjacentHTML('afterbegin', icon(el.dataset.icon)));
+$('#filters').innerHTML = CATS.map(c => `<button type="button" class="fchip cat-${c.id}" data-filter="${c.id}" aria-pressed="true"><i aria-hidden="true"></i>${c.label}</button>`).join('');
+$('#tripDate').value = state.tripDate || '';
+
+renderBase();
+renderPlaces();
+renderProgress();
+renderLocals();
+renderCafes();
+renderCoffees();
+renderBingo();
+renderWords();
+initMap();
+applyTheme();
+renderCountdown();
+pickInitialDay();
+renderPlan();
+bindEvents();
+const storedTab = store.get('tab', 'orte');
+selectTab(['orte', 'plan', 'beisl', 'kaffee', 'bingo', 'wort'].includes(storedTab) ? storedTab : 'orte', { moveMap: storedTab === 'plan' });
+loadWeather();
+})();
+</script>
+</body>
+</html>
